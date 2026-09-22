@@ -1,0 +1,19 @@
+.splash {
+  flex: 1;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+.mark {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  animation: pop 0.6s var(--ease-out);
+}
+@keyframes pop {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,28 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.install {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.installText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.installTitle {
+  font: var(--text-headline);
+}
+.installSub {
+  font: var(--text-footnote);
+  color: var(--text-2);
+}
+.demoNote {
+  font: var(--text-footnote);
+  color: var(--text-2);
+  text-align: center;
+}

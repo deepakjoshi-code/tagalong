@@ -1,0 +1,19 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+}
+.low {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.charging {
+  color: var(--success);
+  background: var(--success-soft);
+}

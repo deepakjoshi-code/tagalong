@@ -1,0 +1,33 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--thing-tint);
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.08), inset 0 4px 10px rgba(255, 255, 255, 0.18);
+}
+.soft {
+  background: var(--thing-tint-soft);
+  color: var(--thing-tint);
+  box-shadow: none;
+}
+.svg {
+  width: 72%;
+  height: 72%;
+  overflow: visible;
+}
+.bounce {
+  animation: bounce 1.6s var(--ease-out) infinite;
+}
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4%);
+  }
+}

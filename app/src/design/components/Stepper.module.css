@@ -1,0 +1,33 @@
+.bar {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  margin: 0 calc(-1 * var(--space-2));
+}
+.track {
+  display: flex;
+  gap: 4px;
+}
+.seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transform-origin: left;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.label {
+  font: var(--text-caption);
+  color: var(--text-2);
+  text-align: center;
+  margin-top: 6px;
+}

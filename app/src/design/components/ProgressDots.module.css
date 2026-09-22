@@ -1,0 +1,22 @@
+.dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-3);
+  opacity: 0.5;
+  transition:
+    width var(--dur) var(--ease-out),
+    background-color var(--dur) var(--ease-out),
+    opacity var(--dur) var(--ease-out);
+}
+.active {
+  width: 20px;
+  border-radius: 4px;
+  background: var(--accent);
+  opacity: 1;
+}

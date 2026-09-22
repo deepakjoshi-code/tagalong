@@ -1,0 +1,28 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--text);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.filled {
+  background: var(--surface-2);
+}
+.accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.plain {
+  color: var(--accent);
+}
+.btn:disabled {
+  opacity: 0.4;
+}

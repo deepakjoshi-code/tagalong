@@ -1,0 +1,31 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  font: var(--text-caption);
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.tinted {
+  background: var(--chip-bg, var(--accent-soft));
+  color: var(--chip-fg, var(--accent));
+}
+.selectable {
+  min-height: 36px;
+  padding: 0 14px;
+  font: var(--text-subhead);
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.selectable:active {
+  transform: scale(0.96);
+}
+.selectable[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
