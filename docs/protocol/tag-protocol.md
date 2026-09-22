@@ -19,7 +19,7 @@ Shared contract between `app/src/transport/codec.ts` and `firmware/`. All multi�
 | PackXfer | `7A67A006` | Write w/o resp, Notify | v1.1 content updates (chunked, CRC32) |
 Also exposes standard **Device Information** (0x180A: model, fw rev, hw rev) and **Battery** (0x180F) services.
 
-## `TagConfig` (13 bytes)
+## `TagConfig` (16 bytes)
 | Off | Type | Field | Notes |
 |---|---|---|---|
 | 0 | u8 | version | `1` |
@@ -27,13 +27,23 @@ Also exposes standard **Device Information** (0x180A: model, fw rev, hw rev) and
 | 2 | u8 | thing | 0 bottle · 1 lunchbox · 2 backpack · 3 toothbrush · 4 shoes · 5 plush · 6 helmet · 7 jacket · 255 other |
 | 3 | u8 | personality | 0 silly · 1 sweet · 2 brave |
 | 4 | u8 | volume | 0–100; firmware maps to ≤ 75 dB(A) @ 25 cm |
-| 5 | u8 | quietStart | minutes‑since‑midnight ÷ 10 (0–143); `255` = quiet hours disabled |
+| 5 | u8 | quietStart | **night** window. minutes‑since‑midnight ÷ 10 (0–143); `255` = disabled |
 | 6 | u8 | quietEnd | same encoding |
 | 7 | u8 | language | 0 en · 1 es · 2 hi |
 | 8 | u8 | flags | bit0 nudges · bit1 eventBuffer · bit2 nameClipPresent · bit3 led · bit4 hapticsReserved |
 | 9 | u8 | maxPerHour | utterance rate limit, default 12 (hard cap 30) |
 | 10 | u16 | timeOfDayMin | app's local minutes‑since‑midnight at write time (tag has no RTC) |
-| 12 | u8 | checksum | XOR of bytes 0–11 |
+| 12 | u8 | schoolStart | **school** window, same encoding as `quietStart`; `255` = disabled |
+| 13 | u8 | schoolEnd | same encoding |
+| 14 | u8 | schoolDays | bitmask, bit0 = Monday … bit6 = Sunday. `0` = every day |
+| 15 | u8 | checksum | XOR of bytes 0–14 |
+
+### Why two quiet windows
+A single window cannot express "silent at night **and** during the school day",
+and a bottle that chats in a classroom gets the product banned rather than
+returned. The school window is separate so it can carry its own weekday mask,
+and so a parent can switch it off in the holidays without losing bedtime quiet.
+The tag is silent if the current time falls inside **either** window.
 
 ## `TagInfo` (12 bytes)
 `fwMajor u8, fwMinor u8, fwPatch u8, hwRev u8, packId u16, packVersion u16, battery u8, uptimeMin u16, flags u8 (bit0 charging, bit1 muted, bit2 nameClipPresent)`
@@ -50,7 +60,7 @@ The tag buffers up to 64 frames while disconnected and replays them on subscribe
 | 0x01 | `01` | Identify: giggle + LED pulse 3 s |
 | 0x02 | `02 <eventType>` | Play a preview line for that event with current config |
 | 0x03 | `03 <minutes u16>` | Mute for N minutes (0 = unmute) |
-| 0x04 | `04 <minutes u16>` | Set time of day (minutes since midnight) |
+| 0x04 | `04 <minutes u16> [dayOfWeek u8]` | Set time of day (minutes since midnight). Optional third byte: 0 = Monday … 6 = Sunday, needed for the school-day mask |
 | 0x05 | `05 A5` | Factory reset (clears bonds + config; keeps content) |
 | 0x06 | `06` | Enter DFU (signed images only) |
 

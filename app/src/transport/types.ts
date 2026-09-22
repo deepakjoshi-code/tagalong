@@ -10,6 +10,7 @@ export interface TagConfig {
   /** 0–100; the tag maps this onto a hard SPL cap. */
   volume: number
   quiet: { enabled: boolean; startMin: number; endMin: number }
+  school: { enabled: boolean; startMin: number; endMin: number; days: number }
   language: WireLanguage
   flags: { nudges: boolean; eventBuffer: boolean; nameClipPresent: boolean; led: boolean }
   /** utterances per hour, 1–30 */

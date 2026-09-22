@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button, Sheet, Stepper } from '@/design/components'
-import { DEFAULT_QUIET_HOURS } from '@/domain/types'
+import { DEFAULT_QUIET_HOURS, DEFAULT_SCHOOL_HOURS } from '@/domain/types'
 import { useStore } from '@/domain/store'
 import { suggestNickname } from '@/domain/nicknames'
 import s from './Wizard.module.css'
@@ -22,6 +22,7 @@ const initialDraft = (): WizardDraft => ({
   nickname: suggestNickname('bottle', 'silly'),
   volume: 70,
   quiet: { ...DEFAULT_QUIET_HOURS },
+  school: { ...DEFAULT_SCHOOL_HOURS },
   nudges: false,
 })
 

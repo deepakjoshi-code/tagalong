@@ -18,6 +18,7 @@ const cfg: TagConfig = {
   personality: 'brave',
   volume: 70,
   quiet: { enabled: true, startMin: 20 * 60, endMin: 7 * 60 },
+  school: { enabled: false, startMin: 0, endMin: 0, days: 0 },
   language: 'en',
   flags: { nudges: false, eventBuffer: true, nameClipPresent: false, led: true },
   maxPerHour: 12,

@@ -73,7 +73,7 @@ tag_speak_decision_t tag_policy_check(const tag_policy_t *p, const tag_config_t 
 
     if (ctx->muted) return TAG_DENY_MUTED;
 
-    if (tag_in_quiet_hours(cfg, ctx->minute_of_day)) return TAG_DENY_QUIET_HOURS;
+    if (tag_in_quiet_hours(cfg, ctx->minute_of_day, ctx->day_of_week)) return TAG_DENY_QUIET_HOURS;
 
     if (tag_event_is_nudge(type) && !(cfg->flags & TAG_FLAG_NUDGES)) return TAG_DENY_NUDGES_OFF;
 

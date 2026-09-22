@@ -5,6 +5,7 @@ import {
   BatteryPill,
   Button,
   Chip,
+  DayPicker,
   ListGroup,
   ListRow,
   NavBar,
@@ -22,7 +23,7 @@ import { PERSONALITY_META } from '@/domain/personalities'
 import { eventsForTag, isTagMuted } from '@/domain/selectors'
 import { useStore } from '@/domain/store'
 import { THING_META } from '@/domain/things'
-import { DEFAULT_SETTINGS, PERSONALITIES, type Personality } from '@/domain/types'
+import { DEFAULT_SCHOOL_HOURS, DEFAULT_SETTINGS, PERSONALITIES, type Personality } from '@/domain/types'
 import { haptics } from '@/lib/haptics'
 import { SPEECH_UNAVAILABLE_COPY, canSpeak, speak, speechUnavailableReason } from '@/lib/speech'
 import { QUIET_STEP_MINUTES, formatMinutesOfDay, formatTime, snapToQuietStep } from '@/lib/time'
@@ -81,6 +82,7 @@ export function TagDetail() {
 
   const meta = THING_META[tag.thing]
   const muted = isTagMuted(tag)
+  const school = tag.school ?? DEFAULT_SCHOOL_HOURS
 
   const sync = async (label = 'Settings sent to the tag') => {
     setBusy(true)
@@ -268,6 +270,74 @@ export function TagDetail() {
           }}
           chevron={false}
         />
+      </ListGroup>
+
+      <ListGroup
+        header="School hours"
+        footer="During school hours the tag is completely silent. It still remembers what happened."
+      >
+        <ListRow
+          title="Silent at school"
+          subtitle={
+            school.enabled
+              ? `${formatMinutesOfDay(school.startMin)} – ${formatMinutesOfDay(school.endMin)}`
+              : 'Off'
+          }
+          trailing={
+            <Toggle
+              label="Silent at school"
+              checked={school.enabled}
+              onChange={(enabled) => {
+                updateTag(tag.id, { school: { ...school, enabled } })
+                void sync('School hours updated')
+              }}
+            />
+          }
+        />
+        {school.enabled && (
+          <>
+            <ListRow
+              title="From"
+              trailing={
+                <input
+                  type="time"
+                  step={QUIET_STEP_MINUTES * 60}
+                  className={s.timeInput}
+                  aria-label="School hours start"
+                  value={timeValue(school.startMin)}
+                  onChange={(e) => updateTag(tag.id, { school: { ...school, startMin: parseTime(e.target.value) } })}
+                  onBlur={() => void sync('School hours updated')}
+                />
+              }
+            />
+            <ListRow
+              title="Until"
+              trailing={
+                <input
+                  type="time"
+                  step={QUIET_STEP_MINUTES * 60}
+                  className={s.timeInput}
+                  aria-label="School hours end"
+                  value={timeValue(school.endMin)}
+                  onChange={(e) => updateTag(tag.id, { school: { ...school, endMin: parseTime(e.target.value) } })}
+                  onBlur={() => void sync('School hours updated')}
+                />
+              }
+            />
+            <ListRow
+              title={
+                <DayPicker
+                  label="School days"
+                  value={school.days}
+                  onChange={(days) => {
+                    updateTag(tag.id, { school: { ...school, days } })
+                    void sync('School days updated')
+                  }}
+                />
+              }
+            />
+          </>
+        )}
       </ListGroup>
 
       <ListGroup

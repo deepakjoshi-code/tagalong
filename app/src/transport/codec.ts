@@ -3,7 +3,7 @@ import { EVENT_BY_CODE, EVENT_META } from '@/domain/events'
 import { TransportError } from './errors'
 import type { ControlOp, TagConfig, TagEventFrame, TagInfoFrame, WireLanguage } from './types'
 
-export const CONFIG_LENGTH = 13
+export const CONFIG_LENGTH = 16
 export const INFO_LENGTH = 12
 export const EVENT_LENGTH = 8
 
@@ -53,7 +53,10 @@ export function encodeConfig(cfg: TagConfig): Uint8Array {
     (cfg.flags.led ? 8 : 0)
   b[9] = clamp(cfg.maxPerHour, 1, 30)
   v.setUint16(10, clamp(cfg.timeOfDayMin, 0, 1439), true)
-  b[12] = xorChecksum(b, 12)
+  b[12] = cfg.school.enabled ? clamp(cfg.school.startMin / 10, 0, 143) : QUIET_DISABLED
+  b[13] = cfg.school.enabled ? clamp(cfg.school.endMin / 10, 0, 143) : QUIET_DISABLED
+  b[14] = cfg.school.days & 0x7f
+  b[15] = xorChecksum(b, 15)
   return b
 }
 
@@ -61,7 +64,7 @@ export function decodeConfig(data: DataView | Uint8Array): TagConfig {
   const b = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
   if (b.length < CONFIG_LENGTH) throw new TransportError('bad-frame', 'Config frame too short')
   if (b[0] !== 1) throw new TransportError('bad-frame', `Unknown config version ${b[0]}`)
-  if (xorChecksum(b, 12) !== b[12]) throw new TransportError('bad-frame', 'Config checksum mismatch')
+  if (xorChecksum(b, 15) !== b[15]) throw new TransportError('bad-frame', 'Config checksum mismatch')
   const ageBand: AgeBand | undefined = AGE_BANDS[b[1] ?? 99]
   const personality: Personality | undefined = PERSONALITIES[b[3] ?? 99]
   const thing = THING_BY_CODE.get(b[2] ?? -1)
@@ -74,6 +77,9 @@ export function decodeConfig(data: DataView | Uint8Array): TagConfig {
   const qs = b[5] ?? QUIET_DISABLED
   const qe = b[6] ?? QUIET_DISABLED
   const quietEnabled = qs !== QUIET_DISABLED && qe !== QUIET_DISABLED
+  const ss = b[12] ?? QUIET_DISABLED
+  const se = b[13] ?? QUIET_DISABLED
+  const schoolEnabled = ss !== QUIET_DISABLED && se !== QUIET_DISABLED
   return {
     version: 1,
     ageBand,
@@ -81,6 +87,12 @@ export function decodeConfig(data: DataView | Uint8Array): TagConfig {
     personality,
     volume: b[4] ?? 0,
     quiet: { enabled: quietEnabled, startMin: quietEnabled ? qs * 10 : 0, endMin: quietEnabled ? qe * 10 : 0 },
+    school: {
+      enabled: schoolEnabled,
+      startMin: schoolEnabled ? ss * 10 : 0,
+      endMin: schoolEnabled ? se * 10 : 0,
+      days: (b[14] ?? 0) & 0x7f,
+    },
     language,
     flags: {
       nudges: !!(flags & 1),

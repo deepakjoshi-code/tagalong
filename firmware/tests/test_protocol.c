@@ -21,6 +21,10 @@ static tag_config_t sample_config(void)
         .flags = TAG_FLAG_EVENT_BUFFER | TAG_FLAG_LED,
         .max_per_hour = 12,
         .time_of_day_min = 9 * 60 + 5,
+        .school_enabled = false,
+        .school_start_min = 0,
+        .school_end_min = 0,
+        .school_days = 0,
     };
     return c;
 }
@@ -40,6 +44,9 @@ TEST(config_encodes_the_documented_bytes)
         0x0A, /* eventBuffer | led */
         12,   /* maxPerHour */
         0x21, 0x02, /* 545 little-endian */
+        255,  /* schoolStart: disabled */
+        255,  /* schoolEnd: disabled */
+        0,    /* schoolDays: every day */
         0     /* checksum, filled below */
     };
     uint8_t out[TAGALONG_CONFIG_LEN];
@@ -48,7 +55,7 @@ TEST(config_encodes_the_documented_bytes)
 
     uint8_t want[TAGALONG_CONFIG_LEN];
     memcpy(want, expected, sizeof(want));
-    want[12] = tag_xor_checksum(want, 12);
+    want[15] = tag_xor_checksum(want, 15);
     CHECK_BYTES(out, want, TAGALONG_CONFIG_LEN);
 }
 
@@ -110,7 +117,7 @@ TEST(config_rejects_a_corrupt_frame)
 
     CHECK_EQ(tag_config_encode(&in, buf, sizeof(buf)), TAG_OK);
     buf[0] = 2;
-    buf[12] = tag_xor_checksum(buf, 12);
+    buf[15] = tag_xor_checksum(buf, 15);
     CHECK_EQ(tag_config_decode(buf, sizeof(buf), &out), TAG_ERR_VERSION);
 
     CHECK_EQ(tag_config_decode(buf, 4, &out), TAG_ERR_LENGTH);
@@ -212,19 +219,64 @@ TEST(control_decode_rejects_a_bad_factory_reset)
 TEST(quiet_hours_wrap_past_midnight)
 {
     tag_config_t c = sample_config(); /* 20:00 to 07:00 */
-    CHECK_EQ(tag_in_quiet_hours(&c, 21 * 60), true);
-    CHECK_EQ(tag_in_quiet_hours(&c, 2 * 60), true);
-    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60), false);
-    CHECK_EQ(tag_in_quiet_hours(&c, 20 * 60), true);  /* start is inclusive */
-    CHECK_EQ(tag_in_quiet_hours(&c, 7 * 60), false);  /* end is exclusive */
+    CHECK_EQ(tag_in_quiet_hours(&c, 21 * 60, TAG_DAY_UNKNOWN), true);
+    CHECK_EQ(tag_in_quiet_hours(&c, 2 * 60, TAG_DAY_UNKNOWN), true);
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, TAG_DAY_UNKNOWN), false);
+    CHECK_EQ(tag_in_quiet_hours(&c, 20 * 60, TAG_DAY_UNKNOWN), true);  /* start is inclusive */
+    CHECK_EQ(tag_in_quiet_hours(&c, 7 * 60, TAG_DAY_UNKNOWN), false);  /* end is exclusive */
 
     c.quiet_start_min = 9 * 60;
     c.quiet_end_min = 17 * 60;
-    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60), true);
-    CHECK_EQ(tag_in_quiet_hours(&c, 8 * 60), false);
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, TAG_DAY_UNKNOWN), true);
+    CHECK_EQ(tag_in_quiet_hours(&c, 8 * 60, TAG_DAY_UNKNOWN), false);
 
     c.quiet_enabled = false;
-    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60), false);
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, TAG_DAY_UNKNOWN), false);
+}
+
+TEST(the_school_window_silences_the_tag_on_school_days)
+{
+    tag_config_t c = sample_config();       /* night window 20:00-07:00 */
+    c.school_enabled = true;
+    c.school_start_min = 8 * 60 + 30;
+    c.school_end_min = 15 * 60 + 30;
+    c.school_days = 0x1F;                   /* Monday to Friday */
+
+    /* Wednesday lunchtime: silent. */
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, 2), true);
+    /* Wednesday after school: talking again. */
+    CHECK_EQ(tag_in_quiet_hours(&c, 16 * 60, 2), false);
+    /* Saturday lunchtime: the mask excludes it. */
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, 5), false);
+    /* Night still applies on any day. */
+    CHECK_EQ(tag_in_quiet_hours(&c, 23 * 60, 5), true);
+
+    /* Without a known weekday the tag errs towards silence. */
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, TAG_DAY_UNKNOWN), true);
+
+    /* An empty mask means every day. */
+    c.school_days = 0;
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, 5), true);
+
+    c.school_enabled = false;
+    CHECK_EQ(tag_in_quiet_hours(&c, 12 * 60, 2), false);
+}
+
+TEST(the_school_window_round_trips)
+{
+    tag_config_t in = sample_config();
+    in.school_enabled = true;
+    in.school_start_min = 8 * 60 + 30;
+    in.school_end_min = 15 * 60 + 30;
+    in.school_days = 0x1F;
+    uint8_t buf[TAGALONG_CONFIG_LEN];
+    tag_config_t out;
+    CHECK_EQ(tag_config_encode(&in, buf, sizeof(buf)), TAG_OK);
+    CHECK_EQ(tag_config_decode(buf, sizeof(buf), &out), TAG_OK);
+    CHECK_EQ(out.school_enabled, true);
+    CHECK_EQ(out.school_start_min, 8 * 60 + 30);
+    CHECK_EQ(out.school_end_min, 15 * 60 + 30);
+    CHECK_EQ(out.school_days, 0x1F);
 }
 
 int main(void)
@@ -241,5 +293,7 @@ int main(void)
     RUN(control_ops_match_the_protocol_table);
     RUN(control_decode_rejects_a_bad_factory_reset);
     RUN(quiet_hours_wrap_past_midnight);
+    RUN(the_school_window_silences_the_tag_on_school_days);
+    RUN(the_school_window_round_trips);
     return test_report("protocol");
 }

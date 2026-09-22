@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #define TAGALONG_PROTO_VERSION 1u
-#define TAGALONG_CONFIG_LEN 13u
+#define TAGALONG_CONFIG_LEN 16u
 #define TAGALONG_INFO_LEN 12u
 #define TAGALONG_EVENT_LEN 8u
 
@@ -105,6 +105,11 @@ typedef struct {
     uint8_t flags;
     uint8_t max_per_hour;  /* 1..30 */
     uint16_t time_of_day_min;
+    /* Second, independent quiet window for the school day. */
+    bool school_enabled;
+    uint16_t school_start_min;
+    uint16_t school_end_min;
+    uint8_t school_days;   /* bit0 = Monday .. bit6 = Sunday; 0 = every day */
 } tag_config_t;
 
 typedef struct {
@@ -168,7 +173,16 @@ tag_status_t tag_control_decode(const uint8_t *in, size_t in_len, tag_control_t 
 /** True if `event` is a code this firmware knows. */
 bool tag_event_is_known(uint8_t code);
 
-/** True when `minute_of_day` falls inside the config's quiet window (handles wrap past midnight). */
-bool tag_in_quiet_hours(const tag_config_t *cfg, uint16_t minute_of_day);
+/** True when `minute_of_day` is inside a window, handling wrap past midnight. */
+bool tag_minute_in_window(uint16_t minute_of_day, uint16_t start_min, uint16_t end_min);
+
+/**
+ * True when the tag must stay silent: inside the night window, or inside the
+ * school window on a day the school mask covers.
+ * `day_of_week` is 0 for Monday .. 6 for Sunday; pass TAG_DAY_UNKNOWN when the
+ * tag has not been told the day, in which case the school mask is ignored.
+ */
+#define TAG_DAY_UNKNOWN 0xFFu
+bool tag_in_quiet_hours(const tag_config_t *cfg, uint16_t minute_of_day, uint8_t day_of_week);
 
 #endif /* TAGALONG_PROTOCOL_H */

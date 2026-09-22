@@ -25,6 +25,7 @@ describe('quiet hours survive the round trip to the tag', () => {
     personality: 'silly',
     volume: 70,
     quiet: { enabled: true, startMin: 0, endMin: 0 },
+    school: { enabled: false, startMin: 0, endMin: 0, days: 0 },
     language: 'en',
     flags: { nudges: false, eventBuffer: true, nameClipPresent: false, led: true },
     maxPerHour: 12,

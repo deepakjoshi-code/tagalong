@@ -1,4 +1,4 @@
-import type { AgeBand, Personality, QuietHours, ThingType } from '@/domain/types'
+import type { AgeBand, Personality, QuietHours, SchoolHours, ThingType } from '@/domain/types'
 
 export interface WizardDraft {
   deviceId?: string
@@ -12,6 +12,7 @@ export interface WizardDraft {
   nickname: string
   volume: number
   quiet: QuietHours
+  school: SchoolHours
   nudges: boolean
 }
 

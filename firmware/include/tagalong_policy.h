@@ -54,6 +54,7 @@ typedef struct {
 typedef struct {
     uint32_t now_ms;            /* monotonic since boot */
     uint16_t minute_of_day;     /* 0..1439, from the last app sync + RTC */
+    uint8_t day_of_week;        /* 0 = Monday .. 6 = Sunday, or TAG_DAY_UNKNOWN */
     bool muted;
     uint8_t battery;            /* 0..100 */
 } tag_policy_ctx_t;

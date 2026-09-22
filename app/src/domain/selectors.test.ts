@@ -74,3 +74,42 @@ describe('privacyInventory', () => {
     expect(privacyInventory(empty)).toEqual({ kids: 0, kidsWithNames: 0, nameClips: 0, tags: 0, events: 0, oldestEventAt: undefined })
   })
 })
+
+describe('school hours', () => {
+  const schoolTag = (over: Partial<Tag['school']> = {}) =>
+    tag({
+      quiet: { enabled: true, startMin: 20 * 60, endMin: 7 * 60 },
+      school: { enabled: true, startMin: 8 * 60 + 30, endMin: 15 * 60 + 30, days: 0b0011111, ...over },
+    })
+
+  it('silences the tag during class on school days', () => {
+    // Wednesday is index 2 with a Monday-first mask.
+    expect(isWithinQuietHours(schoolTag(), 12 * 60, 2)).toBe(true)
+    expect(isWithinQuietHours(schoolTag(), 16 * 60, 2)).toBe(false)
+  })
+
+  it('leaves the weekend alone', () => {
+    expect(isWithinQuietHours(schoolTag(), 12 * 60, 5)).toBe(false)
+    expect(isWithinQuietHours(schoolTag(), 12 * 60, 6)).toBe(false)
+  })
+
+  it('still applies night quiet hours on any day', () => {
+    expect(isWithinQuietHours(schoolTag(), 23 * 60, 6)).toBe(true)
+  })
+
+  it('treats an empty day mask as every day', () => {
+    expect(isWithinQuietHours(schoolTag({ days: 0 }), 12 * 60, 5)).toBe(true)
+  })
+
+  it('errs towards silence when the weekday is unknown', () => {
+    expect(isWithinQuietHours(schoolTag(), 12 * 60)).toBe(true)
+  })
+
+  it('does nothing when switched off', () => {
+    expect(isWithinQuietHours(schoolTag({ enabled: false }), 12 * 60, 2)).toBe(false)
+  })
+
+  it('is absent on tags created before the feature existed', () => {
+    expect(isWithinQuietHours(tag(), 12 * 60, 2)).toBe(false)
+  })
+})

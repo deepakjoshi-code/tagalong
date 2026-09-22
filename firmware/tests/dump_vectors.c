@@ -21,18 +21,21 @@ int main(void)
 
     tag_config_t a = { 1, TAG_BAND_KID, TAG_THING_BOTTLE, TAG_PERSONALITY_BRAVE, 70,
                        true, 20 * 60, 7 * 60, TAG_LANG_EN,
-                       TAG_FLAG_EVENT_BUFFER | TAG_FLAG_LED, 12, 9 * 60 + 5 };
+                       TAG_FLAG_EVENT_BUFFER | TAG_FLAG_LED, 12, 9 * 60 + 5,
+                       false, 0, 0, 0 };
     tag_config_encode(&a, buf, sizeof(buf));
     print_bytes("kid_bottle_brave", buf, TAGALONG_CONFIG_LEN, false);
 
     tag_config_t b = { 1, TAG_BAND_LITTLE, TAG_THING_TOOTHBRUSH, TAG_PERSONALITY_SWEET, 100,
                        false, 0, 0, TAG_LANG_EN,
-                       TAG_FLAG_NUDGES | TAG_FLAG_NAME_CLIP, 30, 0 };
+                       TAG_FLAG_NUDGES | TAG_FLAG_NAME_CLIP, 30, 0,
+                       true, 8 * 60 + 30, 15 * 60 + 30, 0x1F };
     tag_config_encode(&b, buf, sizeof(buf));
     print_bytes("little_toothbrush_sweet_no_quiet", buf, TAGALONG_CONFIG_LEN, false);
 
     tag_config_t c = { 1, TAG_BAND_BIG, TAG_THING_OTHER, TAG_PERSONALITY_SILLY, 0,
-                       true, 0, 1430, TAG_LANG_EN, 0, 1, 1439 };
+                       true, 0, 1430, TAG_LANG_EN, 0, 1, 1439,
+                       false, 0, 0, 0 };
     tag_config_encode(&c, buf, sizeof(buf));
     print_bytes("big_other_silly_edges", buf, TAGALONG_CONFIG_LEN, true);
 

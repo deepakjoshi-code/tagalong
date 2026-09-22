@@ -43,3 +43,8 @@ export function snapToQuietStep(min: number): number {
   const snapped = Math.round(min / QUIET_STEP_MINUTES) * QUIET_STEP_MINUTES
   return Math.min(1430, Math.max(0, snapped))
 }
+
+/** 0 = Monday … 6 = Sunday, matching the tag's school-day mask. */
+export function mondayFirstDayOfWeek(d = new Date()): number {
+  return (d.getDay() + 6) % 7
+}

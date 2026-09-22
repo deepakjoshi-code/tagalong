@@ -1,5 +1,5 @@
 import { useStore } from '@/domain/store'
-import type { Kid, Tag } from '@/domain/types'
+import { DEFAULT_SCHOOL_HOURS, type Kid, type Tag } from '@/domain/types'
 import { nowMinutesOfDay } from '@/lib/time'
 import { formatFirmware } from './codec'
 import { transportForDevice } from './index'
@@ -14,7 +14,10 @@ const listeners = new Set<(tagId: string, frame: TagEventFrame) => void>()
 /** Last uptime seen per tag, so a reboot (uptime going backwards) is detectable. */
 const lastUptime = new Map<string, number>()
 
-export function buildTagConfig(tag: Pick<Tag, 'thing' | 'personality' | 'volume' | 'quiet' | 'nudges' | 'language'>, kid: Pick<Kid, 'ageBand' | 'nameClip'>): TagConfig {
+export function buildTagConfig(
+  tag: Pick<Tag, 'thing' | 'personality' | 'volume' | 'quiet' | 'school' | 'nudges' | 'language'>,
+  kid: Pick<Kid, 'ageBand' | 'nameClip'>,
+): TagConfig {
   return {
     version: 1,
     ageBand: kid.ageBand,
@@ -22,6 +25,7 @@ export function buildTagConfig(tag: Pick<Tag, 'thing' | 'personality' | 'volume'
     personality: tag.personality,
     volume: tag.volume,
     quiet: { ...tag.quiet },
+    school: tag.school ? { ...tag.school } : { ...DEFAULT_SCHOOL_HOURS },
     language: tag.language,
     flags: { nudges: tag.nudges, eventBuffer: true, nameClipPresent: !!kid.nameClip, led: true },
     maxPerHour: 12,

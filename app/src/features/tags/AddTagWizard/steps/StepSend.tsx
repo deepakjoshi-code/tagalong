@@ -57,6 +57,7 @@ export function StepSend({
         personality: draft.personality,
         volume: draft.volume,
         quiet: draft.quiet,
+        school: draft.school,
         nudges: draft.nudges,
         language: 'en',
         simulated: draft.simulated,
@@ -70,6 +71,7 @@ export function StepSend({
           personality: draft.personality,
           volume: draft.volume,
           quiet: draft.quiet,
+          school: draft.school,
           nudges: draft.nudges,
         })
       }

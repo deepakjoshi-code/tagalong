@@ -1,5 +1,5 @@
 import { Volume1, Volume2 } from 'lucide-react'
-import { Button, ListGroup, ListRow, Slider, Toggle } from '@/design/components'
+import { Button, DayPicker, ListGroup, ListRow, Slider, Toggle } from '@/design/components'
 import { QUIET_STEP_MINUTES, formatMinutesOfDay, snapToQuietStep } from '@/lib/time'
 import s from '../Wizard.module.css'
 import type { StepProps } from './StepFind'
@@ -78,6 +78,68 @@ export function StepSound({ draft, patch, next }: StepProps) {
                   aria-label="Quiet hours end"
                   value={timeValue(draft.quiet.endMin)}
                   onChange={(e) => patch({ quiet: { ...draft.quiet, endMin: parseTime(e.target.value) } })}
+                />
+              }
+            />
+          </>
+        )}
+      </ListGroup>
+
+      <ListGroup
+        header="School hours"
+        footer="Some schools ban noisy bottles. During school hours the tag stays completely silent, then picks up where it left off."
+      >
+        <ListRow
+          title="Silent at school"
+          subtitle={
+            draft.school.enabled
+              ? `${formatMinutesOfDay(draft.school.startMin)} – ${formatMinutesOfDay(draft.school.endMin)}`
+              : 'Off'
+          }
+          trailing={
+            <Toggle
+              label="Silent at school"
+              checked={draft.school.enabled}
+              onChange={(enabled) => patch({ school: { ...draft.school, enabled } })}
+            />
+          }
+        />
+        {draft.school.enabled && (
+          <>
+            <ListRow
+              title="From"
+              trailing={
+                <input
+                  type="time"
+                  step={QUIET_STEP_MINUTES * 60}
+                  className={s.input}
+                  style={{ width: 140, minHeight: 44 }}
+                  aria-label="School hours start"
+                  value={timeValue(draft.school.startMin)}
+                  onChange={(e) => patch({ school: { ...draft.school, startMin: parseTime(e.target.value) } })}
+                />
+              }
+            />
+            <ListRow
+              title="Until"
+              trailing={
+                <input
+                  type="time"
+                  step={QUIET_STEP_MINUTES * 60}
+                  className={s.input}
+                  style={{ width: 140, minHeight: 44 }}
+                  aria-label="School hours end"
+                  value={timeValue(draft.school.endMin)}
+                  onChange={(e) => patch({ school: { ...draft.school, endMin: parseTime(e.target.value) } })}
+                />
+              }
+            />
+            <ListRow
+              title={
+                <DayPicker
+                  label="School days"
+                  value={draft.school.days}
+                  onChange={(days) => patch({ school: { ...draft.school, days } })}
                 />
               }
             />

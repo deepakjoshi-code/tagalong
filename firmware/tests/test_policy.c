@@ -20,13 +20,17 @@ static tag_config_t base_config(void)
         .flags = TAG_FLAG_EVENT_BUFFER | TAG_FLAG_LED,
         .max_per_hour = 12,
         .time_of_day_min = 12 * 60,
+        .school_enabled = false,
+        .school_start_min = 0,
+        .school_end_min = 0,
+        .school_days = 0,
     };
     return c;
 }
 
 static tag_policy_ctx_t ctx_at(uint32_t now_ms, uint16_t minute_of_day)
 {
-    tag_policy_ctx_t c = { now_ms, minute_of_day, false, 80 };
+    tag_policy_ctx_t c = { now_ms, minute_of_day, TAG_DAY_UNKNOWN, false, 80 };
     return c;
 }
 
@@ -82,6 +86,30 @@ TEST(quiet_hours_silence_everything)
     tag_policy_ctx_t night = ctx_at(10000, 23 * 60);
     CHECK_EQ(tag_policy_check(&p, &cfg, &night, TAG_EVT_DROP), TAG_DENY_QUIET_HOURS);
     CHECK_EQ(tag_policy_check(&p, &cfg, &night, TAG_EVT_PICKUP), TAG_DENY_QUIET_HOURS);
+}
+
+TEST(school_hours_silence_the_tag_in_class)
+{
+    tag_config_t cfg = base_config();
+    cfg.school_enabled = true;
+    cfg.school_start_min = 8 * 60 + 30;
+    cfg.school_end_min = 15 * 60 + 30;
+    cfg.school_days = 0x1F; /* Monday to Friday */
+
+    tag_policy_t p;
+    tag_policy_init(&p, &cfg, 0, 1);
+
+    tag_policy_ctx_t wednesday_lunch = ctx_at(10000, 12 * 60);
+    wednesday_lunch.day_of_week = 2;
+    CHECK_EQ(tag_policy_check(&p, &cfg, &wednesday_lunch, TAG_EVT_FILLED), TAG_DENY_QUIET_HOURS);
+
+    tag_policy_ctx_t after_school = ctx_at(10000, 16 * 60);
+    after_school.day_of_week = 2;
+    CHECK_EQ(tag_policy_check(&p, &cfg, &after_school, TAG_EVT_FILLED), TAG_SPEAK_ALLOW);
+
+    tag_policy_ctx_t saturday = ctx_at(10000, 12 * 60);
+    saturday.day_of_week = 5;
+    CHECK_EQ(tag_policy_check(&p, &cfg, &saturday, TAG_EVT_FILLED), TAG_SPEAK_ALLOW);
 }
 
 TEST(mute_silences_everything)
@@ -248,6 +276,7 @@ int main(void)
     RUN(the_tag_never_talks_over_itself);
     RUN(each_event_has_its_own_debounce);
     RUN(quiet_hours_silence_everything);
+    RUN(school_hours_silence_the_tag_in_class);
     RUN(mute_silences_everything);
     RUN(nudge_events_need_the_parent_to_opt_in);
     RUN(the_rate_limit_holds_over_an_hour);

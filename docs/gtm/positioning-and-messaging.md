@@ -48,7 +48,7 @@ Five pillars. Every asset must carry at least two, and pillar 3 appears on every
 | 1 | **The object is the character** | "The tag disappears. The bottle becomes Bottle Buddy." | 5 content packs, 513 cells, **2,052 written lines**, 4 per cell (`content/packs`); quarter‑turn cradle ring moves one tag between bottle, lunchbox, backpack, toothbrush, shoes, helmet, jacket, stuffed friend |
 | 2 | **It reacts to real life** | "It knows it was filled, dropped, picked up, or brushed for two whole minutes." | Accelerometer + capacitive channel + ambient light + time; 20 event types (`docs/protocol/tag-protocol.md`); `brush_done` fires at a cumulative 120 s |
 | 3 | **Structurally private** | "No microphone. No camera. No location. No account. No cloud. We literally can't see your data." | ADR‑002 (zero backend), ADR‑004 (no mic in v1), ADR‑007 (rotating private BLE address, no name or serial in advertising); Privacy Center lists everything stored and deletes it in one tap; the tag holds settings only, never a name as text |
-| 4 | **Calm and kind by design** | "Quiet hours, one‑tap mute, a hard volume cap — and it never nags or shames." | Firmware cap **≤75 dB(A) at 25 cm** (toy limit is 85); quiet hours default 8 pm–7 am; 12 utterances/hour default; `content/guidelines.md` §3 bans shame, fear, food and body talk |
+| 4 | **Calm and kind by design** | "Silent at night, silent at school, one‑tap mute, a hard volume cap — and it never nags or shames." | Firmware cap **≤75 dB(A) at 25 cm** (toy limit is 85); **two independent quiet windows** — a night window (default 8 pm–7 am) and a school window with its own weekday mask, both held in the tag's own config (`docs/protocol/tag-protocol.md`); 12 utterances/hour default; `content/guidelines.md` §3 bans shame, fear, food and body talk |
 | 5 | **Buy once, works forever** | "No subscription. No server to shut down. Charge it monthly." | Target ≥30 days per charge at 30 utterances/day; sealed Li‑Po, no coin cell; IP67; 100 × 1.5 m drops onto concrete; content and firmware update over Bluetooth from a static app |
 
 **Pillar 3 is the wedge.** More than eight in ten parents say they worry about connected toys collecting children's data (market research §4). Every competitor either holds an account or uploads location. We are the only product in the landscape that can say *cannot* instead of *does not*.
@@ -187,9 +187,9 @@ Answers are written to be said out loud, in three sentences or fewer. The **neve
 
 ### 5.6 "It'll be noisy. Our school has banned water bottles."
 
-> Volume is capped in the hardware, below the toy standard. Quiet hours are on by default, there is a school‑hours preset, and a double tap mutes it for an hour. It speaks when something happens — not on a timer.
+> Volume is capped in the hardware, below the toy standard. It has **two quiet windows** — one for the night and a separate one for school hours, on the weekdays you choose — and a double tap mutes it for an hour. It speaks when something happens, never on a timer.
 
-**Proof:** ≤75 dB(A) at 25 cm firmware clamp with an end‑of‑line test (the EN 71 limit is 85); 12 utterances/hour default; `left_behind` at most once in three hours; **Classroom‑quiet** printed on the sleeve.
+**Proof:** ≤75 dB(A) at 25 cm firmware clamp with an end‑of‑line test (the EN 71 limit is 85); the school window and its weekday mask live in the tag's own configuration, so the tag stays silent in class even with the phone switched off or out of range, and a parent can turn it off in the holidays without losing bedtime quiet (`docs/protocol/tag-protocol.md`); 12 utterances/hour default; `left_behind` at most once in three hours; **Classroom‑quiet** printed on the sleeve.
 **For teachers specifically:** offer the mute gesture and the silent‑during‑class preset in the first sentence. Several US districts banned stainless bottles over classroom disruption in 2025 — that is our objection to pre‑empt, not theirs to raise.
 
 ### 5.7 "I have an iPhone."
@@ -240,7 +240,7 @@ Tagalong has **two voices** and they must never blend.
 | tag, talking tag, thing, character, personality, age band | *smart* (meaningless and cloud‑coded), *AI* (we have none), *IoT*, *device ecosystem* |
 | notices, reacts, speaks up, says hi, giggles | *tracks*, *finds*, *locates*, *monitors*, *detects your child*, *knows where* |
 | asks once, invites, celebrates | *reminds*, *nags*, *alerts*, *warns*, *makes them* |
-| quiet hours, mute, volume cap | *loud*, *alarm*, *notification*, *buzzer* |
+| quiet hours, school hours, mute, volume cap | *loud*, *alarm*, *notification*, *buzzer* |
 | stays on your phone, nothing to collect, no account | *we don't sell your data*, *anonymised*, *bank‑grade*, *military‑grade*, *we take privacy seriously* |
 | drinks more water when it's fun *(never as a claim — see §10)* | *healthy*, *unhealthy*, *hydration goals*, *screen time is bad*, any food or body framing |
 | for ages 2–12 *(pending the age‑grade decision)* | *for toddlers*, *for babies*, *educational*, *developmental*, *therapeutic* |

@@ -16,13 +16,30 @@ export const lastEventForTag = (s: StoreData, tagId: string): TagEvent | undefin
 export const isTagMuted = (tag: Tag, now = Date.now()): boolean =>
   tag.mutedUntil !== undefined && tag.mutedUntil > now
 
-export function isWithinQuietHours(tag: Tag, minutesOfDay: number): boolean {
-  if (!tag.quiet.enabled) return false
-  const { startMin, endMin } = tag.quiet
+/** Handles a window that wraps past midnight. */
+export function isWithinWindow(minutesOfDay: number, startMin: number, endMin: number): boolean {
   if (startMin === endMin) return false
   return startMin < endMin
     ? minutesOfDay >= startMin && minutesOfDay < endMin
     : minutesOfDay >= startMin || minutesOfDay < endMin
+}
+
+/**
+ * True when the tag would stay silent: inside the night window, or inside the
+ * school window on a day its mask covers.
+ * `dayOfWeek` is 0 for Monday … 6 for Sunday.
+ */
+export function isWithinQuietHours(tag: Tag, minutesOfDay: number, dayOfWeek?: number): boolean {
+  if (tag.quiet.enabled && isWithinWindow(minutesOfDay, tag.quiet.startMin, tag.quiet.endMin)) {
+    return true
+  }
+  const school = tag.school
+  if (school?.enabled && isWithinWindow(minutesOfDay, school.startMin, school.endMin)) {
+    if (school.days === 0) return true
+    if (dayOfWeek === undefined) return true
+    return (school.days & (1 << dayOfWeek)) !== 0
+  }
+  return false
 }
 
 export interface PrivacyInventory {

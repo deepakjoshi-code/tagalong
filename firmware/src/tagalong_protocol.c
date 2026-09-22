@@ -73,7 +73,15 @@ tag_status_t tag_config_encode(const tag_config_t *cfg, uint8_t *out, size_t out
     out[8] = cfg->flags;
     out[9] = clamp_u8(cfg->max_per_hour, 1, 30);
     wr16(&out[10], (uint16_t)(cfg->time_of_day_min > 1439 ? 1439 : cfg->time_of_day_min));
-    out[12] = tag_xor_checksum(out, 12);
+    if (cfg->school_enabled) {
+        out[12] = clamp_u8((cfg->school_start_min + TAGALONG_QUIET_STEP / 2) / TAGALONG_QUIET_STEP, 0, 143);
+        out[13] = clamp_u8((cfg->school_end_min + TAGALONG_QUIET_STEP / 2) / TAGALONG_QUIET_STEP, 0, 143);
+    } else {
+        out[12] = TAGALONG_QUIET_DISABLED;
+        out[13] = TAGALONG_QUIET_DISABLED;
+    }
+    out[14] = (uint8_t)(cfg->school_days & 0x7Fu);
+    out[15] = tag_xor_checksum(out, 15);
     return TAG_OK;
 }
 
@@ -81,7 +89,7 @@ tag_status_t tag_config_decode(const uint8_t *in, size_t in_len, tag_config_t *o
 {
     if (!in || !out || in_len < TAGALONG_CONFIG_LEN) return TAG_ERR_LENGTH;
     if (in[0] != TAGALONG_PROTO_VERSION) return TAG_ERR_VERSION;
-    if (tag_xor_checksum(in, 12) != in[12]) return TAG_ERR_CHECKSUM;
+    if (tag_xor_checksum(in, 15) != in[15]) return TAG_ERR_CHECKSUM;
     if (in[1] >= TAG_BAND_COUNT || in[3] >= TAG_PERSONALITY_COUNT) return TAG_ERR_VALUE;
     if (!thing_is_known(in[2]) || in[7] > TAG_LANG_HI) return TAG_ERR_VALUE;
 
@@ -97,6 +105,10 @@ tag_status_t tag_config_decode(const uint8_t *in, size_t in_len, tag_config_t *o
     out->flags = in[8];
     out->max_per_hour = in[9];
     out->time_of_day_min = rd16(&in[10]);
+    out->school_enabled = (in[12] != TAGALONG_QUIET_DISABLED) && (in[13] != TAGALONG_QUIET_DISABLED);
+    out->school_start_min = out->school_enabled ? (uint16_t)(in[12] * TAGALONG_QUIET_STEP) : 0u;
+    out->school_end_min = out->school_enabled ? (uint16_t)(in[13] * TAGALONG_QUIET_STEP) : 0u;
+    out->school_days = (uint8_t)(in[14] & 0x7Fu);
     return TAG_OK;
 }
 
@@ -221,12 +233,33 @@ tag_status_t tag_control_decode(const uint8_t *in, size_t in_len, tag_control_t 
     }
 }
 
-bool tag_in_quiet_hours(const tag_config_t *cfg, uint16_t minute_of_day)
+bool tag_minute_in_window(uint16_t minute_of_day, uint16_t start_min, uint16_t end_min)
 {
-    if (!cfg || !cfg->quiet_enabled) return false;
-    if (cfg->quiet_start_min == cfg->quiet_end_min) return false;
-    if (cfg->quiet_start_min < cfg->quiet_end_min) {
-        return minute_of_day >= cfg->quiet_start_min && minute_of_day < cfg->quiet_end_min;
+    if (start_min == end_min) return false;
+    if (start_min < end_min) return minute_of_day >= start_min && minute_of_day < end_min;
+    /* Wraps past midnight. */
+    return minute_of_day >= start_min || minute_of_day < end_min;
+}
+
+bool tag_in_quiet_hours(const tag_config_t *cfg, uint16_t minute_of_day, uint8_t day_of_week)
+{
+    if (!cfg) return false;
+
+    if (cfg->quiet_enabled &&
+        tag_minute_in_window(minute_of_day, cfg->quiet_start_min, cfg->quiet_end_min)) {
+        return true;
     }
-    return minute_of_day >= cfg->quiet_start_min || minute_of_day < cfg->quiet_end_min;
+
+    if (cfg->school_enabled &&
+        tag_minute_in_window(minute_of_day, cfg->school_start_min, cfg->school_end_min)) {
+        /*
+         * An empty mask means every day. When the tag does not know the weekday
+         * it applies the window anyway: being quiet on a Saturday is a small
+         * disappointment, talking in a classroom is what gets the product banned.
+         */
+        if (cfg->school_days == 0u) return true;
+        if (day_of_week == TAG_DAY_UNKNOWN) return true;
+        if (day_of_week < 7u && (cfg->school_days & (uint8_t)(1u << day_of_week))) return true;
+    }
+    return false;
 }

@@ -81,6 +81,23 @@ export const QuietHoursSchema = z.object({
 })
 export type QuietHours = z.infer<typeof QuietHoursSchema>
 
+/**
+ * A second quiet window for the school day. Separate from night quiet hours so a
+ * parent can switch it off in the holidays, and so it can carry its own weekday
+ * mask. A bottle that chats in a classroom gets the product banned, not returned.
+ */
+export const SchoolHoursSchema = z.object({
+  enabled: z.boolean(),
+  startMin: z.number().int().min(0).max(1439),
+  endMin: z.number().int().min(0).max(1439),
+  /** bit0 = Monday … bit6 = Sunday. 0 means every day. */
+  days: z.number().int().min(0).max(127),
+})
+export type SchoolHours = z.infer<typeof SchoolHoursSchema>
+
+export const WEEKDAYS_MASK = 0b0011111
+export const ALL_DAYS_MASK = 0b1111111
+
 export const TagInfoSchema = z.object({
   fw: z.string(),
   hw: z.number().int(),
@@ -101,6 +118,7 @@ export const TagSchema = z.object({
   personality: PersonalitySchema,
   volume: z.number().int().min(0).max(100),
   quiet: QuietHoursSchema,
+  school: SchoolHoursSchema.optional(),
   nudges: z.boolean(),
   language: LanguageSchema,
   createdAt: z.number(),
@@ -143,6 +161,14 @@ export const DEFAULT_SETTINGS: Settings = {
 }
 
 export const DEFAULT_QUIET_HOURS: QuietHours = { enabled: true, startMin: 20 * 60, endMin: 7 * 60 }
+
+/** Off by default; the wizard offers it, the parent chooses. */
+export const DEFAULT_SCHOOL_HOURS: SchoolHours = {
+  enabled: false,
+  startMin: 8 * 60 + 30,
+  endMin: 15 * 60 + 30,
+  days: WEEKDAYS_MASK,
+}
 
 export const PersistedStateSchema = z.object({
   kids: z.array(KidSchema),
