@@ -15,62 +15,56 @@
 
 # Your privacy
 
-**Short version: Tagalong has no account and no cloud. What you set up stays on your phone and on your tags. We never see it. We could not see it if we wanted to.**
+**Tagalong has no account and no cloud. What you set up stays on your phone and on your tags. We never see it. We could not see it if we wanted to.**
 
 ## What we do not do
 
-- We do not have a server that stores anything about you or your child.
-- We do not ask you to make an account.
-- We do not use analytics, crash reporting, advertising, or any outside company's code.
-- We do not collect location. Your tag has no GPS and cannot be used to find your child.
-- Your tag has no microphone and no camera. There is nothing on it that can listen or watch.
-- We do not sell or share anything, to anyone, for any reason. There is nothing to sell.
+- No server of ours stores anything about you or your child.
+- No account, ever.
+- No analytics, no crash reports, no ads, no other company's code.
+- No location. Your tag has no GPS and cannot be used to find your child.
+- No microphone and no camera on the tag. There is nothing on it that can listen or watch.
+- We sell and share nothing, to anyone. There is nothing to sell.
 
 ## What is kept, and where
 
-Everything below lives in this app's own storage on your phone.
+All of this lives in the app's own storage, on your phone.
 
 | What | Why | How long |
 |---|---|---|
-| Your child's first name, if you type one | So the app can show you whose tag is whose. It is optional — leave it blank | Until you change or delete it |
-| Your child's age group (2–4, 5–7, 8–12) | It decides the words, jokes and pace your tag uses | Until you change or delete it |
-| A recording of the name, if you make one | So a tag can say the name out loud. Up to 1.5 seconds | Until you delete it |
-| Which things you tagged, their nicknames, and your sound settings | So your tags behave the way you set them | Until you delete them |
-| A short list of what each tag noticed — filled up, dropped, picked up | So you can see the day on the tag's screen in the app | **7 days, then it deletes itself** |
+| Your child's first name, if you type one | So you can tell whose tag is whose. Optional — leave it blank | Until you change or delete it |
+| Their age group (2–4, 5–7, 8–12) | It sets the words, jokes and pace | Until you change or delete it |
+| A recording of the name, if you make one | So a tag can say it out loud. Up to 1.5 seconds | Until you delete it |
+| Which things you tagged, their nicknames, your sound settings | So your tags behave as you set them | Until you delete them |
+| A short list of what each tag noticed — filled up, dropped, picked up | So you can see the tag's day in the app | **7 days, then it deletes itself** |
 
-Your tag itself holds even less: the age group, what it is attached to, the personality, your sound settings, and the name recording if you made one. **Your tag never holds your child's name as text, and it never holds a location.**
+The tag holds less: the age group, what it is attached to, the personality, your sound settings, and the name recording if you made one. **It never holds your child's name as text, and never holds a location.**
 
-## The microphone on your phone
+## Your phone's microphone
 
-If you choose to record your child's name, the app asks your phone for permission to use its microphone for those few seconds. The recording is saved on your phone. It is not uploaded, not analysed, and not sent to us or anyone else. You can play it, delete it, or never make one.
+If you choose to record the name, the app asks your phone for its microphone for those few seconds. The recording is saved on your phone — not uploaded, not analysed, not sent to us. Delete it whenever you like, or never make one.
 
-Phrase previews inside the app are spoken by your phone's own built‑in voice. The app only ever uses a voice that works offline, so the words never travel over the internet. If your phone has no offline voice, the app tells you and stays quiet instead.
+Phrase previews use your phone's own offline voice. If your phone has no offline voice, the app says so and stays quiet rather than sending the words anywhere.
 
 ## Bluetooth
 
-The app talks to your tags over Bluetooth, directly, phone to tag. You start it: you hold the button on the tag and pick it in your phone's list. The app never connects to a tag you did not pair yourself, and it lets go of the connection shortly after you put your phone down.
+The app talks to your tags directly, phone to tag. You start it by holding the button on the tag and picking it from your phone's list. The app never connects to a tag you did not pair yourself, and it lets go shortly after you put your phone down.
 
 ## You are in control
 
-Open **Settings → Privacy Center**. You will see a live list of everything stored, and three buttons:
+**Settings → Privacy Center** shows a live list of everything stored, and three buttons: **Export my data**, **Clear activity**, and **Delete everything**. None of them asks us for permission — they cannot, and that is the point.
 
-- **Export my data** — saves a readable file to your phone, so you can keep or move it.
-- **Clear activity** — deletes the 7‑day list.
-- **Delete everything** — removes all of it from this phone, for good.
-
-None of these send a request to us or wait for our approval. They cannot, and that is the point.
-
-To wipe a tag as well, put it on its charger and hold its button for 10 seconds, until the light blinks red.
+To wipe a tag too, put it on its charger and hold the button for 10 seconds, until the light blinks red.
 
 ## Two honest details
 
-**Getting the app is a web visit.** The app is a web app, so when you first open it or when it updates, your phone asks our web host for the files. Like any website, that host records the request — your IP address, the time, and which file. We keep those records briefly, only to keep the site working and safe, and we never connect them to anything in the app. Once the app is on your phone, it works offline and asks for nothing.
+**Getting the app is a web visit.** It is a web app, so your phone fetches its files from our host the first time and when it updates. Like any website, the host records that request — your IP address, the time, the file. We keep those records briefly, to keep the site working and safe, and never link them to anything in the app. After that, the app works offline and asks for nothing.
 
-**Your phone is the safe.** Because your data lives on your phone and nowhere else, it is protected by your phone's own lock and encryption. Anyone who can unlock your phone can open the app and see what is in it. If you share a phone, keep that in mind.
+**Your phone is the safe.** Your data is protected by your phone's own lock and encryption. Anyone who can unlock your phone can open the app and read it. Worth knowing if you share a phone.
 
 ## Children
 
-Tagalong is made for children, and it is built so that we collect no personal information from a child at all. There is no sign‑up, no profile, no tracking, and nothing is transmitted to us. Parents set the product up and can see and delete everything at any time. If you believe a child's information has somehow reached us, write to `{PRIVACY_EMAIL}` and we will help — though in this design there is nowhere for it to have gone.
+Tagalong is for children and is built to collect no personal information from a child at all: no sign‑up, no profile, no tracking, nothing transmitted. Parents set it up and can see and delete everything, any time. If you think a child's information has somehow reached us, write to `{PRIVACY_EMAIL}` — though in this design there is nowhere for it to have gone.
 
 ## For your child, in their words
 
@@ -78,7 +72,7 @@ Tagalong is made for children, and it is built so that we collect no personal in
 
 ## Changes, and how to reach us
 
-If we ever change what the product does with data, we change this notice first, raise its version, and show you what changed the next time you open the app. Questions: `{PRIVACY_EMAIL}`.
+If we ever change what the product does with data, we change this notice first, raise its version, and show you what changed next time you open the app. Questions: `{PRIVACY_EMAIL}`.
 
 ---
 

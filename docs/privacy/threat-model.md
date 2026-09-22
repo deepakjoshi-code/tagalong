@@ -54,26 +54,26 @@
 ```mermaid
 flowchart LR
   subgraph HOST["Static host (build artefacts only) — TB1"]
-    CDN["HTML/JS/CSS, icons,\ncontent packs, signed DFU image"]
+    CDN["HTML/JS/CSS, icons,<br/>content packs, signed DFU image"]
   end
   subgraph PHONE["Parent's phone — TB2"]
     subgraph ORIGIN["PWA origin sandbox — TB3"]
-      APP["React PWA\n(no network at runtime)"]
-      IDB[("IndexedDB\nkeyval-store\ntagalong:v1 + clip:*")]
+      APP["React PWA<br/>(no network at runtime)"]
+      IDB[("IndexedDB<br/>keyval-store<br/>tagalong:v1 + clip:*")]
       SW["Service worker cache"]
     end
-    OS["Browser / OS:\nBluetooth permission grant,\nmicrophone permission,\nspeech voices, Downloads"]
+    OS["Browser / OS:<br/>Bluetooth permission grant,<br/>microphone permission,<br/>speech voices, Downloads"]
   end
   subgraph AIR["Radio space — TB4"]
     ADV["Advertising packets (RPA)"]
   end
   subgraph TAG["Tag — TB5"]
     FW["nRF52840 firmware"]
-    CFG[("Config 13 B\nevent ring 64 frames\nbond keys (LTK/IRK)")]
-    QSPI[("16 MB QSPI:\ncontent packs,\nname-clip region (v1.1)")]
+    CFG[("Config 13 B<br/>event ring 64 frames<br/>bond keys (LTK/IRK)")]
+    QSPI[("16 MB QSPI:<br/>content packs,<br/>name-clip region (v1.1)")]
   end
   subgraph FACTORY["Factory / CM — TB6"]
-    PROV["Factory image, EOL test,\nship mode, serial label"]
+    PROV["Factory image, EOL test,<br/>ship mode, serial label"]
   end
   CDN -->|"install + update only"| APP
   APP <--> IDB
@@ -231,7 +231,7 @@ Legend: **S** spoof · **T** tamper · **R** repudiation · **I** information di
 | T‑47 | H | A stranger presses the button and the tag speaks; the child engages | L2×I2=4 | Content bans any line implying the tag can see, hear or locate (content guidelines §3); no name is spoken by a v1.0 tag (TAG‑NC‑01); PRV‑60 | 2 |
 | T‑48 | I | A stranger learns "this child owns a Tagalong" and uses the brand as a social‑engineering hook | L2×I2=4 | PRV‑26 (proposed), PRV‑60, PRV‑61 (kid‑facing copy: the tag is a toy, it does not know things) | 4 — accepted, §9 |
 | T‑49 | I | Hand‑me‑down or resale carries the previous child's clip or config | L2×I2=4 | PRV‑35, PRV‑23, PRV‑62 (the "forget this tag" sheet tells the parent how to wipe the tag itself) | 1 |
-| T‑50 | H | A parent treats the event log as supervision and confronts the child ("the tag says you didn't brush") | L2×I2=4 | PRV‑61 (kid‑facing "obvious sign" copy, UK AADC standard 12), content guidelines ban shame, nudges default **off** | 3 — accepted, §9 |
+| T‑50 | H | A parent treats the event log as supervision and confronts the child ("the tag says you didn't brush") | L2×I2=4 | PRV‑61 (kid‑facing "obvious sign" copy, UK AADC standard 11, parental controls), content guidelines ban shame, nudges default **off** | 3 — accepted, §9 |
 
 ## 6. Attack trees
 
@@ -472,7 +472,7 @@ Every requirement is written so an engineer can implement it and a tester can fa
 |---|---|---|---|---|
 | PRV‑59 | Support copy, the policy and the packaging state plainly that a Tagalong tag cannot locate a child and has no microphone, so a worried parent gets a true answer immediately. | Partially implemented (Privacy Center, About, packaging §6) | Copy review | Legal, Design |
 | PRV‑60 | No line may imply the tag can see, hear, or know where the child is, or that it reports to a parent. Enforced by the content review checklist and by the validator's banned‑phrase list. | Specified (guidelines §3) / Proposed (validator rule) | `content/validate.mjs` extension + review | Content |
-| PRV‑61 | Because a parent can see a 7‑day activity log, the child is given an age‑appropriate, obvious sign of it (UK AADC standard 12): the tag flashes on every utterance, and a kid‑facing card and an in‑app page say, in the child's words, "I tell your grown‑up when I get filled, dropped or picked up. I can't see you, hear you, or know where you are." | Proposed — the in‑box kid card does not exist yet | Copy review with the child‑development reviewer; usability check with 5 children per band | Design, Content |
+| PRV‑61 | Because a parent can see a 7‑day activity log, the child is given an age‑appropriate, obvious sign of it (UK AADC standard 11, parental controls): the tag flashes on every utterance, and a kid‑facing card and an in‑app page say, in the child's words, "I tell your grown‑up when I get filled, dropped or picked up. I can't see you, hear you, or know where you are." | Proposed — the in‑box kid card does not exist yet | Copy review with the child‑development reviewer; usability check with 5 children per band | Design, Content |
 | PRV‑62 | "Forget this tag" and "Delete everything" both tell the parent how to wipe the tag itself (charger + 10 s), because deleting the phone's copy does not reset the tag. | Partially implemented (PRD S‑05 requires it; the sheet copy does not yet say it) | Copy review | App |
 | PRV‑63 | An independent zero‑network and privacy audit of the shipped build is commissioned before launch, and its report is part of the G3 evidence. | Specified (roadmap G3) | Signed report | Privacy, Legal |
 | PRV‑64 | Any new data type, radio behaviour, sensor, network feature or third‑party component requires a new ADR **and** a revision of this threat model before implementation. Location, finding networks, cloud sync and microphones are named as requiring a full re‑review. | Specified (roadmap §1 rule 3) | Gate review | Founder, Privacy |

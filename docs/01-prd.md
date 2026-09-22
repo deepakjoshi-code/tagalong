@@ -104,7 +104,7 @@ The load‑bearing claim here is that **the app is optional after setup**. The t
 | 15 % | One gentle "I'm getting sleepy — could you charge me tonight?" per day (outside quiet hours) | Amber battery pill (shipped at ≤ 15 %); the words "Charge soon" are P1 | TAG‑BAT‑02 |
 | 5 % | Silent; two red LED blinks on tap; BLE status still works | Red pill and "Needs a charge" are P1 — today the pill stays amber | TAG‑BAT‑03 |
 | On charger | "Ahh, snack time." once; amber breathe → dim green when full | Card shows charging bolt | TAG‑BAT‑05/06 |
-| Dead → charged | Boots into time‑unknown state; reactive lines only until the app connects | Home hint: "Open near the tag to set its clock" | TAG‑TIME‑03 |
+| Dead → charged | Boots into time‑unknown state; reactive lines only until the app connects | Nothing to do: the next time the app connects it re‑sends the time and settings automatically | TAG‑TIME‑03 |
 
 ### 4.6 Forgetting a tag (hand‑me‑down, resale, or gone for good)
 
@@ -153,12 +153,15 @@ The load‑bearing claim here is that **the app is optional after setup**. The t
 **X‑06 Error language.** Every transport error maps to one plain sentence through `describeTransportError` — seven codes (`unsupported`, `cancelled`, `not-found`, `disconnected`, `permission`, `gatt`, `bad-frame`), each with copy naming the recovery ("Hold its button until it giggles, then try again"). No error codes, no "GATT", no stack traces, never a device identifier.
 
 **X‑07 Speech preview (phone).**
-- Uses `speechSynthesis`. Voice selection prefers a known‑good English voice by name (Samantha, Karen, Moira, Google US English, Google UK English Female, Microsoft Aria, Microsoft Zira), then the default English voice, then any English voice, then anything; the cache is invalidated on `voiceschanged`. Rate and pitch come from personality (silly 1.08/1.25 · sweet 0.95/1.10 · brave 1.00/0.90) multiplied by a band rate factor (little 0.92 · kid 1.00 · big 1.04).
-- The spoken text is always on screen before it is spoken — preview rows are the text, and the playground shows it in a `role="status"` bubble (A11Y‑07).
-- Given the chosen voice is a network voice, Then the preview still plays and Privacy Center notes "Preview voices are provided by your phone's operating system." **(gap: the note is not shown, P1 — voices are never filtered by `localService`, so a cloud voice on some Android builds could send preview text to the OS vendor. This is the only place where the zero‑network claim needs a caveat; see §14 Q6)**
-- Given speech is unsupported, Then the line is shown and never spoken, with "This browser can't preview voices. The tag still will."
+- Uses `speechSynthesis`, and **only ever through a voice whose `localService` is true**. Some platforms ship network voices, which would send the preview text — including the kid's first name where a line uses `{{name}}` — to an OS vendor's servers. That would break the one promise the product is sold on, so the app would rather stay silent: with no local English voice it says so instead of speaking.
+- Voice selection: local voices only → English ones if any exist → a known‑good name (Samantha, Karen, Moira, Daniel, Google US English, Google UK English Female, Microsoft Aria, Microsoft Zira) → the default → the first available. The cache is invalidated on `voiceschanged`.
+- Rate and pitch come from personality (silly 1.08/1.25 · sweet 0.95/1.10 · brave 1.00/0.90) multiplied by a band factor (little 0.92 · kid 1.00 · big 1.04).
+- The spoken text is always on screen before it is spoken — preview rows *are* the text, and the playground shows it in a `role="status"` bubble (A11Y‑07). So a device with no local voice loses the audio, never the content.
+- Two distinct unavailable states, each with its own sentence: no speech API → "This browser can't preview voices. Your tag still will."; no local voice → "This device only has online voices, and Tagalong never sends text to the internet. Your tag still speaks." The second is a feature, not an apology.
 - Given iOS, Then speech starts only from a tap (WebKit gesture rule); the ▶ affordance is the gesture.
 - Any new utterance cancels the previous one, so previews never overlap.
+
+**X‑13 Live event mirroring.** Given a connected tag fires an event while the app is open and the tag is not muted, Then a toast shows what it just said — `Bottle Buddy: "Glug glug glug… full tank, amigo!"`, or the kid‑words form when the pack has no line for that event. The phone does not speak it: the tag has already spoken, and two voices would be worse than one. This exists so that a parent watching over a child's shoulder sees the same thing the child heard, and so the demo reads clearly in a shop.
 
 **X‑08 Appearance & haptics.** System/light/dark follows `settings.appearance` and is applied as `data-theme` on the document root; all colours via tokens; haptics via `navigator.vibrate` only when `settings.haptics` and supported.
 
@@ -291,6 +294,7 @@ Duplicate nicknames within one kid are allowed and not de‑duplicated; the wiza
 | ID | Given / When / Then |
 |---|---|
 | AT‑6.1 | When step 6 opens, Then the Kid (if new) and the Tag are persisted first — so a family's work is never lost to a radio failure — and the app then connects and writes `TagConfig` (version 1, band, thing, personality, volume, quiet, language 0, flags: nudges, eventBuffer = 1, nameClipPresent = from the kid's clip, led = 1; maxPerHour 12; timeOfDayMin = now). A labelled spinner reads "Sending to {nickname}…". |
+| AT‑6.1a | Retrying is idempotent: the new kid's id is written back to the wizard draft and an existing tag with the same `deviceId` is updated in place, so **Try sending again** can never leave a family with two kids or two cards for one tag. |
 | AT‑6.2 | Given the write succeeds, Then `lastSyncAt` is stamped, a success haptic fires, confetti plays (skipped under reduced motion), and the screen reads "{nickname} is ready! · Tuned for ages 5–7. Give it a shake and see what happens." with three example lines. |
 | AT‑6.3 | Given the write fails for any reason, Then the screen reads "{nickname} is saved" with the plain‑language transport error (X‑06) or "We couldn't reach the tag, but your settings are saved and will sync next time.", plus **Try sending again**. The tag stays in the list and re‑syncs from the detail screen. Reading the config back and comparing it, and one automatic retry, are **P1** (§13 A‑16). |
 | AT‑6.4 | Given a simulated tag, Then the write round‑trips through the in‑memory device and the final button reads **Try it in the playground** (routing to `/demo`), with **Go to my tags** underneath. |
@@ -340,7 +344,8 @@ Duplicate nicknames within one kid are allowed and not de‑duplicated; the wiza
 | PC‑03 | **Export my data** → `tagalong-data.json` (`{app, format: 1, exportedAt, note, data: {kids, tags, events, settings}}`) via the browser download; the file says in its own `note` field that audio recordings are not included, and the group footer repeats it. Nothing leaves the device except through the OS share the parent chooses. Including clips (base64) and a date‑stamped filename are **P1** — without clips an export is not a complete backup, which matters for E‑04. |
 | PC‑04 | **Clear activity** → deletes every event immediately, toast "Activity cleared". A confirm step is **P1** (it is destructive and one tap away). |
 | PC‑05 | **Delete everything** → same sheet and effect as S‑05. |
-| PC‑06 | Footer: "No servers. No accounts. No analytics. We literally can't see your data." The durability note (X‑03) and the OS‑voice note (X‑07) are **P1** additions. |
+| PC‑06 | A **Keeping your data safe** group reports whether the browser has agreed to keep this data, offers to ask when it has not, and warns iOS Safari users who have not installed the app about 7‑day eviction (X‑03). |
+| PC‑06a | Footer: "No servers. No accounts. No analytics. We literally can't see your data." |
 | PC‑07 | (P2 · v1.1) **Restore from export** — imports a JSON export on a new phone (schema‑validated; tags still need re‑pairing). |
 
 ### 5.8 Demo playground (`/demo`)
@@ -364,10 +369,12 @@ The app is a working PWA at v0.1.0. Every screen in §5.1–5.8 exists, both tra
 |---|---|
 | Screens | Welcome (3 slides), Home, 6‑step wizard, Tag detail, Kids list + editor, Settings, About, Privacy Center, Demo playground — all routes in the design spec's IA |
 | Transport | `WebBluetoothTransport` (chooser, GATT, notifications, `getDevices()` reconnect) and `SimulatedTransport` (config round‑trip, event frames, battery drift, mute, identify); `codec.ts` implements `TagConfig` 13 B, `TagInfo` 12 B, `EventFrame` 8 B and all six control ops exactly as `tag-protocol.md` specifies |
-| Data | zustand + IndexedDB, zod on every boundary, per‑record validation on rehydrate, 7‑day pruning, export, clear, wipe, name‑clip blobs |
-| Content | 5 packs, 2,052 EN lines, **exactly 4 lines in every cell**, `{{name}}` resolution with band fallbacks, no‑repeat picker, `generic` + per‑thing flavour fallback |
+| Connection hygiene | `Info` read before the connection is cached (a half‑open link is thrown away, not reused), `setTime` on every connect, reboot detection by falling uptime with an automatic config re‑push, and a 10 s background disconnect so no tag is held open by an app nobody is watching |
+| Data | zustand + IndexedDB, zod on every boundary, per‑record validation on rehydrate, 7‑day pruning, `storage.persist()` on first save, storage status and iOS eviction warning in the Privacy Center, export, clear, wipe, name‑clip blobs |
+| Privacy in the small | Preview voices filtered to `localService` with an honest sentence when a device only offers online voices; `check-no-external-origins.mjs` scans the build for anything fetchable off‑origin |
+| Content | 5 packs, **513 cells, 2,052 EN lines, exactly 4 in every cell, 20 distinct events**, validator clean; `{{name}}` resolution with band fallbacks, no‑repeat picker, `generic` + per‑thing flavour fallback |
 | Platform | Installable PWA (`autoUpdate`), offline, strict CSP in `index.html` and `public/_headers`, no third‑party requests, no fonts, no analytics; ≈ 212 KB gz |
-| Tests | Unit tests for the codec, the store, the picker and time formatting; Playwright smoke + 19 screenshots across light and dark |
+| Tests | 32 unit tests in 6 files (codec, store, store regressions, selectors, phrase picker, time formatting); Playwright smoke + 19 screenshots across light and dark. Verified green at the time of writing, along with lint and typecheck |
 
 **P0 for hardware launch — each one needs firmware to exist, and none can be skipped**
 
@@ -388,15 +395,18 @@ The app is a working PWA at v0.1.0. Every screen in §5.1–5.8 exists, both tra
 3. **Quiet‑hours confirm before Identify** (TD‑04) — a tag that giggles at 11 pm is a return.
 4. **Mute over the wire** (TD‑03) and mute reconciliation from `Info` (TAG‑MU‑04).
 5. **Read‑back + one retry after the config write**, and the "Not sent yet" / **Finish setup** path (AT‑6.3, TD‑08, E‑07).
-6. **Long‑press mute/forget on Home cards** (H‑04); **duplicate‑device guard** (AT‑1.8).
-7. **Pairing‑window chooser filter** (AT‑1.1a) — validate at the P0 rig.
-8. **`04 setTime` on connect, reboot detection, buffered‑frame timestamps and dedupe** (X‑05, TAG‑BUF‑02/03) — needed the day firmware buffers anything.
-9. **Confirm before Clear activity** (TD‑05, PC‑04); **clips in the export** (PC‑03).
-10. **Storage persistence + iOS eviction warning** (X‑03); **install‑banner dismissal for 30 days** (H‑06).
-11. **Carousel a11y** (W‑06), **unsupported‑browser footnote** (W‑05), **"Move tags to…"** (K‑05), **volume preview on release** (AT‑5.1), **full playground event set** (D‑02), **playground through the simulated transport** (D‑04).
-12. **OS‑voice caveat in the Privacy Center** (X‑07) — see §14 Q6.
+6. **Wire `check-no-external-origins.mjs` into `pnpm check` and CI** (X‑02) — the guard exists but can be skipped, which is the same as not having it.
+7. **Long‑press mute/forget on Home cards** (H‑04); **duplicate‑device guard** (AT‑1.8).
+8. **Pairing‑window chooser filter** (AT‑1.1a) — validate at the P0 rig.
+9. **Buffered‑frame timestamps and dedupe** (TAG‑BUF‑02/03) — needed the day firmware buffers anything: replayed frames are currently all stamped with the arrival time, so a morning's events would land in one minute.
+10. **Confirm before Clear activity** (TD‑05, PC‑04); **clips in the export** (PC‑03).
+11. **Install‑banner dismissal for 30 days** (H‑06); **carousel a11y** (W‑06); **unsupported‑browser footnote** (W‑05); **"Move tags to…"** (K‑05); **volume preview on release** (AT‑5.1); **full playground event set** (D‑02); **playground through the simulated transport** (D‑04).
 
-**P2 / v1.1+** Shared‑element transitions (H‑03), tag ordering by last event (H‑02), "Full pack" labels (AT‑3.1), band suggestion from a birth year (AT‑2.5), nickname de‑duplication (X‑12), day grouping and drop‑impact chips (TD‑05), storage size (PC‑01), restore from export (PC‑07), soft limits (X‑03), demo‑tag cleanup on toggle‑off (S‑03), landscape playground (D‑05).
+**Closed since this document was first drafted** — recorded so nobody re‑opens them: `storage.persist()` and the storage/eviction reporting (X‑03), `setTime` on connect, reboot detection and background disconnect (X‑05), local‑voice‑only previews with honest fallback copy (X‑07), idempotent setup retries (AT‑6.1a), live event mirroring (X‑13), and the off‑origin build scanner (X‑02, wiring pending).
+
+**P2 / v1.1+** Shared‑element transitions (H‑03), tag ordering by last event (H‑02), "Full pack" labels (AT‑3.1), band suggestion from a birth year (AT‑2.5), nickname de‑duplication (X‑12), day grouping and drop‑impact chips (TD‑05), storage size (PC‑01), restore from export (PC‑07), soft limits (X‑03), demo‑tag cleanup on toggle‑off (S‑03), landscape playground (D‑05), reboot hint on Home (X‑05), eviction warning on Welcome (X‑03).
+
+**This table goes stale fast.** It was true at 2026‑09‑22 against `app/` at v0.1.0, and the app is moving weekly. Re‑verify it against the code at every gate; a gate does not pass on a stale §5.9.
 
 ---
 
@@ -517,7 +527,7 @@ Detection thresholds are firmware defaults to tune at EVT; the **semantics, cool
 | TAG‑BAT‑04 | Temperature hold | Outside 0–45 °C while charging | Charging paused; amber double‑blink every 5 s; speech unaffected | — |
 | TAG‑BAT‑05 | Charging | VBUS | `charging` line once (not in quiet/mute); amber breathe at low brightness; sensor events suppressed except `tap`; BLE available | Bolt on pill |
 | TAG‑BAT‑06 | Charged | ≥ 95 % and taper | Dim green solid while on charger (off during quiet hours); tap shows state 3 s | "Charged" |
-| TAG‑BAT‑09 | Dead | Brown‑out | Off; boots into **Time‑unknown** when charged | Home hint (TAG‑TIME‑03) |
+| TAG‑BAT‑09 | Dead | Brown‑out | Off; boots into **Time‑unknown** when charged | Silent recovery on next connect (TAG‑TIME‑03) |
 
 **TAG‑BAT‑07** Battery % is reported via `Battery` characteristic, `Info` and advertising; the app smooths readings and never shows a value jumping by > 5 points within a minute unless charging. **TAG‑BAT‑08** Target ≥ 30 days at 30 utterances/day; ≥ 45 days at 10/day.
 
@@ -562,15 +572,15 @@ Detection thresholds are firmware defaults to tune at EVT; the **semantics, cool
 |---|---|
 | TAG‑TIME‑01 | Time of day comes from `TagConfig.timeOfDayMin` and `04 <minutes>`; the app sends `04` on every connect. Tag keeps time from its low‑frequency crystal (≤ ±3 s/day drift). |
 | TAG‑TIME‑02 | Date is not needed: all time‑based rules are time‑of‑day only; "once/day" resets at the tag's local midnight. |
-| TAG‑TIME‑03 | After a boot without time (battery dead): **Time‑unknown** — reactive events speak normally, nudges and `good_morning` are suppressed, quiet hours cannot apply, the tap LED double‑blinks (A11Y‑ and parent cue). The app detects the reboot (uptime decreased) and shows a Home hint. |
+| TAG‑TIME‑03 | After a boot without time (battery dead): **Time‑unknown** — reactive events speak normally, nudges and `good_morning` are suppressed, quiet hours cannot apply, and the tap LED double‑blinks so the parent has a cue (A11Y‑10). The app detects the reboot from falling uptime and silently re‑writes the config, which restores the time and every setting; a Home hint is P2 (§14 Q9). |
 
 ### 6.10 Event buffer and sync
 
 | ID | Rule |
 |---|---|
 | TAG‑BUF‑01 | 64‑frame ring buffer; oldest dropped when full; replayed oldest‑first on `Event` subscribe; cleared once notifications are acknowledged by the link layer. |
-| TAG‑BUF‑02 | App timestamps: `at = now − (Info.uptimeMin·60 − frame.uptimeSec)·1000`; frames from before a reboot (uptime went backwards) are stamped at the previous `lastSyncAt` and flagged approximate ("earlier"). |
-| TAG‑BUF‑03 | App dedupes on `(deviceId, uptimeSec, eventType)`. Malformed frames (zod) are dropped silently and counted in dev only. |
+| TAG‑BUF‑02 | App timestamps: `at = now − (Info.uptimeMin·60 − frame.uptimeSec)·1000`; frames from before a reboot (uptime went backwards) are stamped at the previous `lastSyncAt` and flagged approximate ("earlier"). **(gap, P1 — today every frame is stamped with its arrival time, so a day's buffered events would all read as the same minute. Harmless with no firmware; wrong the moment there is.)** |
+| TAG‑BUF‑03 | App dedupes on `(deviceId, uptimeSec, eventType)`. Malformed frames are dropped silently by the codec. **(dedupe is a gap, P1 — same dependency as TAG‑BUF‑02.)** |
 
 ### 6.11 Pairing and security (ADR‑007, protocol)
 
@@ -612,7 +622,7 @@ Detection thresholds are firmware defaults to tune at EVT; the **semantics, cool
 | E‑06 | **iOS Safari** | No Web Bluetooth, so the transport layer resolves to simulated with `reason: 'unsupported'` and the wizard says so in AT‑1.6 copy: Chrome on Android today, iPhone app coming. The whole app — playground, kids, settings, Privacy Center — works. PWA installs via Add to Home Screen; speech only from a tap (X‑07). The 7‑day storage eviction warning is the P1 gap (X‑03), and it is the one place where iOS can silently lose a family's setup. Market research §9 risk 3 is the commercial half of this row: roughly 58 % of US parents are on iOS, so v1.1 must land before the first Q4. |
 | E‑07 | **Tag out of range / config not sent** | Tag saved as "Not sent yet"; Home card offers **Finish setup**; detail banner **Send settings now** (TD‑08). |
 | E‑08 | **Quiet hours cross midnight; device timezone changes** | Encoding supports wrap (TAG‑QH‑01); app sends fresh time on every connect; a timezone change is just a new `04`. |
-| E‑09 | **Tag battery died** | Time‑unknown policy (TAG‑TIME‑03); app hint; resolved on next connect. |
+| E‑09 | **Tag battery died** | Time‑unknown policy (TAG‑TIME‑03); resolved automatically on the next connect, which re‑sends time and settings. The parent's only cue is the battery pill, which is the right amount of noise. |
 | E‑10 | **Browser site data cleared** | App behaves as first launch; tags stay bonded to the phone's BT stack — Welcome adds "Set up before? Your tags need a quick reset: charger + 10 s." |
 | E‑11 | **Second phone tries to pair** | Rejected; red ×2 on the tag; AT‑1.7 copy on the second phone. |
 | E‑12 | **Firmware newer than app** | Unknown event codes ignored; `proto ≠ 1` → "Update the app to use this tag" (the PWA auto‑updates). |
@@ -743,6 +753,7 @@ Detection thresholds are firmware defaults to tune at EVT; the **semantics, cool
 3. **Ship the name‑clip recorder in 1.0** with the honest "used after the 1.1 update" note, or hide it until 1.1? Recommendation: hide until 1.1 unless the demo benefits.
 4. **Launch the PWA publicly before hardware ships** (with Demo mode as the pre‑order experience)? Recommendation: yes, at pre‑order open.
 5. **India in v1.1** requires WPC ETA approval and BIS considerations (roadmap); confirm priority versus UK/AU/CA.
-6. **Preview voices and the zero‑network claim.** `speechSynthesis` may resolve to a cloud voice on some Android builds, which would send preview text (a pack line, plus the kid's first name when a line uses `{{name}}`) to the OS vendor. Options: filter to `localService === true` and fall back to text‑only; keep the current behaviour and disclose it in the Privacy Center; or strip `{{name}}` from previews. Recommendation: **filter to local voices and disclose the fallback** — the claim is the product, and a silent caveat is worse than a missing feature. Founder call because it degrades previews on some phones.
+6. **Preview voices — decided in code, needs a founder ack.** The app now speaks only through `localService` voices and says so when a device offers none (X‑07). The cost is that previews are silent on some phones; the benefit is that the zero‑network claim has no asterisk. Confirm this is the trade you want, because the alternative (speak anyway, disclose in the Privacy Center) is a marketing decision, not an engineering one.
 7. **`connect-src`.** The architecture doc says `'none'`; the build ships `'self'` so the DFU image can be fetched (A‑06). Confirm `'self'` and update the architecture doc, or drop to `'none'` and ship the image as a base64 module.
 8. **Lunchbox mounting.** The app tells parents to stick the tag inside the lid; the packaging plan ships no adhesive in the 1‑pack and assumes a lid‑handle strap (A‑15). Pick one at EVT and make the app, the box and the leaflet agree.
+9. **Does the parent ever need to be told the tag rebooted?** The app now silently re‑pushes settings when it sees uptime go backwards, which is the kindest behaviour but hides a dead battery. Recommendation: leave it silent and let the battery pill carry the news.
