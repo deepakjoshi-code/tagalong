@@ -93,7 +93,7 @@ Expected application image ≈ 300–340 KiB (Zephyr + SoftDevice Controller per
 | `pack_stage` | `0xE60000` | 524,288 B | PackXfer chunk staging + chunk bitmap (v1.1) |
 | reserve | `0xEE0000` | 1,179,648 B | second language or pack growth |
 
-`essentials` exists so that a corrupted or half‑written `pack_primary` degrades to a tag that still giggles and still says "charge me", instead of a silent brick. Detection and fallback are in `content-pack-format.md` §10.
+`essentials` exists so that a corrupted or half‑written `pack_primary` degrades to a tag that still giggles and still says "charge me", instead of a silent brick. Detection and fallback are in `content-pack-format.md` §6.
 
 ### 3.3 RAM (256 KiB) — application budget
 
@@ -103,7 +103,7 @@ Expected application image ≈ 300–340 KiB (Zephyr + SoftDevice Controller per
 | QSPI read double buffer (2 × 4 KiB) | 8,192 | 16 ADPCM blocks per fetch |
 | ADPCM decoder state | 32 | |
 | Accel feature ring (8 blocks × 32 samples × 6 B) | 1,536 | 2.56 s of history for the drop/shake windows |
-| `tag_policy_t` | 1,064 | `last_event_ms[256]` dominates |
+| `tag_policy_t` | 1,048 | `last_event_ms[256]` is 1,024 of it — see FW‑GAP‑11 |
 | Engine per‑thing state | ≤ 512 | one union, only the configured thing is live |
 | Event ring (64 × 8 B + head/tail) | 528 | TAG‑BUF‑01 |
 | Thread stacks (§5) | 9,216 | |
@@ -228,7 +228,7 @@ flowchart TB
     SUP["suppressors<br/>transport, cold start,<br/>confidence floor, per-thing mute"]
     DEB["debouncer<br/>detector debounce per event"]
     RING["event ring, 64 frames<br/>TAG-BUF-01"]
-    POL["tag_policy_check<br/>mute, quiet hours, nudges,<br/>min gap, cooldown, token bucket"]
+    POL["tag_policy_check<br/>mute, night window, school window,<br/>nudges, min gap, cooldown, tokens"]
     PRI["priority + pending slot<br/>TAG-UT-02"]
     SEL["phrase selection<br/>no-repeat, name splice"]
   end
@@ -352,7 +352,7 @@ CONFIG_SETTINGS_NVS=y
 # CONFIG_BT_GATT_CACHING              - no need, and one less linkable attribute
 ```
 
-`CONFIG_BT_GATT_DYNAMIC_DB=y` is enabled for exactly one purpose: registering the SMP/DFU service on `Control 0x06` and unregistering it on reboot (`dfu-and-security.md` §4). The Tagalong service itself is a static `BT_GATT_SERVICE_DEFINE` table.
+`CONFIG_BT_GATT_DYNAMIC_DB=y` is enabled for exactly one purpose: registering the SMP/DFU service on `Control 0x06` and unregistering it on reboot (`dfu-and-security.md` §5.1). The Tagalong service itself is a static `BT_GATT_SERVICE_DEFINE` table.
 
 ### 9.2 Advertising payloads
 
@@ -412,7 +412,23 @@ The protocol document marks `Config`, `Control` and `PackXfer` as encrypted and 
 
 Connection parameters: peripheral preferred 30–50 ms interval, latency 0, supervision timeout 4 s while the app is configuring; after 10 s of link idleness the tag requests 200 ms / latency 4; after 60 s idle it disconnects (matching the `Connected → Active` edge in `system-architecture.md` §3).
 
-Error handling is exactly the protocol document's: bad checksum, unknown version and out‑of‑range enums all return application error `0x80` from the write callback (`BT_GATT_ERR(0x80)`), which is what `tag_config_decode` already distinguishes via `TAG_ERR_CHECKSUM` / `TAG_ERR_VERSION` / `TAG_ERR_VALUE`.
+Error handling is exactly the protocol document's: bad checksum, unknown version and out‑of‑range enums all return application error `0x80` from the write callback (`BT_GATT_ERR(0x80)`), which is what `tag_config_decode` already distinguishes via `TAG_ERR_CHECKSUM` / `TAG_ERR_VERSION` / `TAG_ERR_VALUE`. `TagConfig` is 16 bytes with the XOR checksum over bytes 0–14 in byte 15; a write of any other length is rejected on length before anything else is parsed.
+
+### 9.7 Quiet windows and weekday awareness
+
+`TagConfig` carries **two independent silence windows** (protocol §"Why two quiet windows"): the night window (`quietStart`/`quietEnd`) and the school window (`schoolStart`/`schoolEnd` plus a `schoolDays` weekday mask, bit0 = Monday). The tag is silent when the current minute falls inside **either**. `tag_in_quiet_hours()` already implements this, including the fail‑safe that matters: when `schoolDays == 0` or the weekday is `TAG_DAY_UNKNOWN`, the school window applies on every day. Being quiet on a Saturday is a small disappointment; a bottle that talks in a classroom is what gets the product banned.
+
+The weekday therefore has to reach the tag, and `TagConfig` has no field for it. The only carrier is `ControlOp 0x04` in its 4‑byte form, `04 <minutes u16> <dayOfWeek u8>`. Firmware consequences:
+
+| Situation | Behaviour |
+|---|---|
+| `04` with 3 bytes (no weekday) | time set, weekday left as it was; if it was unknown it stays unknown |
+| `04` with 4 bytes | time and weekday set; `dayOfWeek > 6` is rejected with `0x80` |
+| `Config` write | sets `timeOfDayMin` only; **weekday is not touched** — so a config‑only session leaves the school window applying every day |
+| Local midnight rollover | `day_of_week = (day_of_week + 1) % 7` when it is known |
+| Boot, or no sync for > 72 h | `day_of_week = TAG_DAY_UNKNOWN`, and the time is treated as unknown per §10.2 |
+
+The app already sends `04` on every connect (TAG‑TIME‑01); it should send the 4‑byte form so weekday awareness is restored after every reboot. The 3‑byte form remains valid and is not an error.
 
 ---
 
@@ -423,10 +439,10 @@ Error handling is exactly the protocol document's: bad checksum, unknown version
 | Key | Store | Written when | Notes |
 |---|---|---|---|
 | BLE bond (LTK, IRK, peer identity) | `settings`/NVS | on bonding | cleared by factory reset |
-| `TagConfig` (13 B) | NVS | on a valid `Config` write | survives reboot; re‑applied at boot |
+| `TagConfig` (16 B) | NVS | on a valid `Config` write | survives reboot; re‑applied at boot. Both quiet windows and the weekday mask are part of it. |
 | Mute deadline | NVS | on mute change | **cleared at boot** (TAG‑MU‑03) — stored only so a mute survives a brown‑out mid‑day is *not* a requirement; the record exists for the factory test path |
 | Capsense baseline + empty/full span | NVS | leaky integrator, committed at most every 30 min | `event-engine-spec.md` §5.1 |
-| Accel trims, SPL ceiling, serial, hw rev | `provision_partition` | factory, once | write‑once; `dfu-and-security.md` §8 |
+| Accel trims, SPL ceiling, serial, hw rev | `provision_partition` | factory, once | write‑once; `dfu-and-security.md` §10 |
 | Day counters (`good_morning` fired, brush sessions, `low_battery` announced) | NVS | on change | reset at the tag's local midnight (TAG‑TIME‑02) |
 | MCUboot security counter | `provision_partition` | MCUboot only | anti‑rollback |
 | Event ring (64 × `EventFrame`) | **RAM** | continuously | snapshotted to NVS only on a critical‑battery shutdown |
@@ -436,9 +452,11 @@ NVS write budget: the W25Q is not involved; internal flash endurance is 10k cycl
 
 ### 10.2 Time keeping (no RTC — TAG‑TIME‑01/02/03)
 
-`minute_of_day` is seeded by `TagConfig.timeOfDayMin` or `ControlOp 0x04` and advanced by the RTC counter off the LFXO. At ±20 ppm the drift is ≈ ±1.7 s/day at 20–30 °C and ≤ ±6 s/day across 0–45 °C, so the PRD's "≤ ±3 s/day" holds at room temperature and the sensing document's ±3 min/day tolerance holds everywhere. The app re‑sends the time on every connect, so real drift is bounded by connection frequency, not by the crystal.
+`minute_of_day` is seeded by `TagConfig.timeOfDayMin` or `ControlOp 0x04` and advanced by the RTC counter off the LFXO; `day_of_week` comes only from the 4‑byte form of `0x04` (§9.7) and rolls over at local midnight. At ±20 ppm the drift is ≈ ±1.7 s/day at 20–30 °C and ≤ ±6 s/day across 0–45 °C, so the PRD's "≤ ±3 s/day" holds at room temperature and the sensing document's ±3 min/day tolerance holds everywhere. The app re‑sends the time on every connect, so real drift is bounded by connection frequency, not by the crystal.
 
-`Time-unknown` (boot with no synced time): reactive events speak; `good_morning`, `left_behind` and `long_still` are suppressed; quiet hours cannot be evaluated and therefore do not block audio; the tap response double‑blinks first (TAG‑LED‑18). If the tag has not synced for **> 72 h**, it re‑enters `Time-unknown` rather than risk speaking at 3 a.m. (`sensing-and-event-detection.md` §2.6).
+`Time-unknown` (boot with no synced time): reactive events speak; `good_morning`, `left_behind` and `long_still` are suppressed; the night window cannot be evaluated and therefore does not block audio; the tap response double‑blinks first (TAG‑LED‑18). If the tag has not synced for **> 72 h**, it re‑enters `Time-unknown` rather than risk speaking at 3 a.m. (`sensing-and-event-detection.md` §2.6).
+
+`Weekday-unknown` is a separate and deliberately asymmetric case: with the time known but the weekday not, the **school window still applies every day** (§9.7). Unknown time fails towards speaking, unknown weekday fails towards silence, because the cost of each mistake is different.
 
 ### 10.3 Battery estimate
 
@@ -465,7 +483,7 @@ The state machine is `system-architecture.md` §3 and PRD §6.1 verbatim; firmwa
 | Speaking | rail + amp + QSPI + decode | ≈ 85 mA for ≈ 1.53 s |
 | Charging | BQ25100 | ≈ 120 mA in |
 
-Idle→Active is the wake‑up interrupt; Active→Idle is 30 s of stillness. The measured average utterance length from the shipped packs is **1.53 s** (`content-pack-format.md` §9), which confirms the 1.5 s figure the power budget assumes.
+Idle→Active is the wake‑up interrupt; Active→Idle is 30 s of stillness. The measured average utterance length from the shipped packs is **1.53 s** (`content-pack-format.md` §8), which confirms the 1.5 s figure the power budget assumes.
 
 Button gestures (TAG‑BTN‑01…07) are timed in the `ui` thread with `k_work_delayable`: 20 ms debounce, single ≤ 400 ms, double within 500 ms, hold 3 s → pairing window, hold 10 s **while on the charger** → factory reset with an LED countdown (A‑03; off the charger a 10 s hold does nothing, which is the kid‑proofing). `tap` is produced **by the button only** — decision A‑01. The LIS2DW12 tap and double‑tap engines are configured but their interrupts are not routed to the engine in v1; using them would double‑fire `tap` and would false‑trigger in a school bag.
 
@@ -500,7 +518,7 @@ CONFIG_DEBUG_COREDUMP=n
 CONFIG_THREAD_NAME=n
 ```
 
-There is no console, no shell and no transport for a log to leave the device. The UART and SWD pads are internal and SWD is closed by APPROTECT (`dfu-and-security.md` §6).
+There is no console, no shell and no transport for a log to leave the device. The UART and SWD pads are internal and SWD is closed by APPROTECT (`dfu-and-security.md` §7.2).
 
 **Development (`dev.conf`)** enables `CONFIG_LOG` over RTT at `LOG_LEVEL_INF`, subject to three hard rules:
 
@@ -528,7 +546,7 @@ sequenceDiagram
     T->>T: giggle clip, LED white slow pulse
     T->>H: bt_set_bondable(true)
     T->>H: adv start, undirected connectable, 100 ms, 60 s
-    Note over H: ADV_IND: flags + service UUID +<br/>mfg [proto=1, hwRev, batt, flags.pairing=1]<br/>SCAN_RSP: "Tagalong"
+    Note over H: ADV_IND: flags + service UUID +<br/>mfg [proto=1, hwRev, batt, flags.pairing=1]<br/>SCAN_RSP carries the name Tagalong
 
     P->>A: tap "Search" (user gesture)
     A->>H: connect
@@ -543,24 +561,25 @@ sequenceDiagram
 
     A->>H: read Info 7A67A002
     H-->>A: fw, hwRev, packId, packVersion, battery, uptimeMin, flags
-    A->>H: write Config 7A67A001, 13 B
+    A->>H: write Config 7A67A001, 16 B
+    Note over T: bytes 5-6 night window, 12-14 school window<br/>+ weekday mask, byte 15 XOR of 0..14
     H->>T: tag_config_decode
-    alt bad checksum, version or enum
+    alt bad length, checksum, version or enum
         T-->>A: ATT error 0x80
     else valid
         T->>T: persist to NVS, seed minute_of_day,<br/>re-profile sensors for cfg.thing,<br/>tag_policy_init
         T-->>A: write response
         T->>T: LED green pulse
     end
-    A->>H: write Control 7A67A005 = 04 <minutes>
-    T->>T: set time of day
+    A->>H: write Control 7A67A005 = 04, minutes u16, dayOfWeek u8
+    T->>T: set time of day and weekday<br/>school window now weekday-aware
     A->>H: subscribe Event 7A67A003
     T->>H: replay buffered frames, oldest first
     H-->>A: EventFrame x N
 
     Note over T: later, disconnected. Kid fills the bottle.
     T->>T: capsense step + 2 s still -> filled
-    T->>T: ring append, tag_policy_check -> ALLOW
+    T->>T: ring append, tag_policy_check<br/>mute, night window, school window, nudges,<br/>min gap, cooldown, tokens -> ALLOW
     T->>T: pick clip, no-repeat, pre-delay 0-800 ms
     T->>T: rail on, SD_MODE high, I2S play, SD_MODE low <=50 ms after
     T->>H: adv post-motion, 1.28 s, RPA, accept-list only
@@ -586,7 +605,8 @@ sequenceDiagram
 | FW‑GAP‑05 | No pre‑speech delay (TAG‑UT‑03). | `drop` ≤ 300 ms, everything else uniform 0–800 ms from `tag_policy_rand`. |
 | FW‑GAP‑06 | No probabilistic speak gate: `putdown` should speak ≈ 1 in 3, `sip` ≈ 1 in 2 (PRD §6.2). | `tag_event_speak_numerator/denominator()` consulted before the token bucket. |
 | FW‑GAP‑07 | Battery gate is `battery <= 5`; the PRD says critical below 5 % with exit at ≥ 8 %, and low below 15 % with exit at ≥ 18 %. | Hysteresis state in the engine; policy takes a resolved `battery_state`. |
-| FW‑GAP‑08 | `tag_policy_check` denies during quiet hours for all events, but control ops `01`/`02` must bypass quiet hours (TAG‑QH‑04, A‑09). | Control ops take a separate path that checks mute and critical battery only. |
+| FW‑GAP‑08 | `tag_policy_check` denies inside either silence window for all events, but control ops `01`/`02` must bypass quiet hours (TAG‑QH‑04, A‑09). | Control ops take a separate path that checks mute and critical battery only. Applies to the school window too: a parent tapping Identify at 11:00 on a Tuesday asked for it. |
+| FW‑GAP‑12 | Nothing carries or maintains the weekday. `tag_control_decode` reads `arg` from 3 bytes and ignores a 4th, `tag_control_encode` caps at 3 bytes (its doc comment still says "1..3"), and nothing does the midnight rollover or the reset to `TAG_DAY_UNKNOWN` on boot and after 72 h without sync. So `tag_policy_ctx_t.day_of_week` is always unknown today and every school window behaves as "every day". | Extend `tag_control_decode`/`encode` to the protocol's 4‑byte `0x04` form and update the doc comment to "1..4"; `store/timekeeping.c` owns rollover and the unknown transitions (§9.7, §10.2). The fail‑safe direction means this gap is conservative, not dangerous — it over‑silences rather than under‑silences. |
 | FW‑GAP‑09 | No per‑thing speech suppression (backpack suppresses `shake`/`putdown`, toothbrush suppresses `pickup`/`putdown`/`shake`, lunchbox suppresses `shake` and does not emit `long_still`, shoes/helmet suppress `putdown`). | `tag_thing_suppresses(thing, event)` in the engine, ahead of the policy. |
 | FW‑GAP‑10 | `tag_policy_t.recent[]` stores clip indices **within the current cell**, so index 2 of `filled` wrongly excludes index 2 of `drop`. The app's equivalent stores globally unique line strings and has no such collision. | Store pack‑global clip ids; `tag_policy_pick_clip()` gains the cell's clipref base. `event-engine-spec.md` §9. |
 | FW‑GAP‑11 | `last_event_ms[TAG_MAX_PER_HOUR_CAP > 0 ? 256 : 256]` is a no‑op ternary costing 1 KiB of RAM for 20 live event codes. | Index by dense event slot (20 entries, 80 B) using the same LUT the pack index uses. |
@@ -599,9 +619,11 @@ None of these block P0‑rig bring‑up (roadmap: firmware 0.1, October 2026); a
 
 1. **Pack sample rate.** ADR‑003 specifies IMA ADPCM at 16 kHz. The shipped packs contain 2,052 lines / 1,592 distinct clips, which at 16 kHz is **16.98 MiB** — more than the entire 16 MiB flash. The v1 EN build is therefore specified at **12 kHz** (12.89 MiB, 92 % of the pack region). The format carries the rate in its header and the I²S change is one `RATIO` value, so this is reversible on a bigger flash part. **This needs an ADR‑003 amendment**; see the open questions in the delivery note.
 2. **Characteristic permissions.** All Tagalong‑service characteristics require bonding and encryption (§9.5). This is stricter than the protocol document's table and matches ADR‑007 and PRV‑18.
-3. **Advertising is split across `ADV_IND` and `SCAN_RSP`** (§9.2) because the protocol document's payload does not fit one 31‑byte PDU. No field is added or removed.
-4. **Both MCUboot slots are in internal flash**, so a bad image reverts automatically. The QSPI region the earlier hardware document reserved for DFU staging is reassigned to PackXfer staging.
-5. **`tap` comes from the button only** (decision A‑01); the accelerometer tap engines stay unrouted in v1.
-6. **The tag stores no phrase text and no `TagConfig`‑adjacent strings.** The pack is audio plus integer indices.
-7. **`essentials` mini‑pack** is a firmware‑side addition not named in any upstream document. It costs 256 KiB of QSPI and removes the "silent brick after a failed pack write" failure mode that PackXfer would otherwise introduce at v1.1.
-8. **Per‑unit SPL calibration.** The ≤ 75 dB(A) cap is enforced by a per‑unit ceiling measured at EOL rather than a single firmware constant, because speaker sensitivity varies by more than the 10 dB margin we are holding.
+3. **`TagConfig` is 16 bytes.** The protocol document's detailed field table, `app/src/transport/codec.ts` (`CONFIG_LENGTH = 16`) and `tagalong_protocol.h` (`TAGALONG_CONFIG_LEN 16u`) all agree; only the summary row in the protocol document's service table still reads "13 B". Firmware follows the field table. See the open questions.
+4. **Unknown weekday fails towards silence, unknown time fails towards speech** (§9.7, §10.2). That asymmetry is intentional and is the one place where the tag deliberately does less than the parent configured.
+5. **Advertising is split across `ADV_IND` and `SCAN_RSP`** (§9.2) because the protocol document's payload does not fit one 31‑byte PDU. No field is added or removed.
+6. **Both MCUboot slots are in internal flash**, so a bad image reverts automatically. The QSPI region the earlier hardware document reserved for DFU staging is reassigned to PackXfer staging.
+7. **`tap` comes from the button only** (decision A‑01); the accelerometer tap engines stay unrouted in v1.
+8. **The tag stores no phrase text and no `TagConfig`‑adjacent strings.** The pack is audio plus integer indices.
+9. **`essentials` mini‑pack** is a firmware‑side addition not named in any upstream document. It costs 256 KiB of QSPI and removes the "silent brick after a failed pack write" failure mode that PackXfer would otherwise introduce at v1.1.
+10. **Per‑unit SPL calibration.** The ≤ 75 dB(A) cap is enforced by a per‑unit ceiling measured at EOL rather than a single firmware constant, because speaker sensitivity varies by more than the 10 dB margin we are holding.

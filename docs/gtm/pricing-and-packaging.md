@@ -117,7 +117,7 @@ FBA tiers: the 1‑pack box is 44 mm thick, so it is **large standard**, not sma
 
 | SKU | MSRP | Channel | Fees | Net revenue | Landed | Reserve | **Contribution** | **% of MSRP** |
 |---|---|---|---|---|---|---|---|---|
-| 1‑pack | 29.99 | **DTC** | 1.31 payment · 1.35 net shipping | 27.30 | 17.20 | 2.00 | **$8.10** | **27.0%** |
+| 1‑pack | 29.99 | **DTC** | 1.31 payment · 1.38 net shipping | 27.30 | 17.20 | 2.00 | **$8.10** | **27.0%** |
 | 1‑pack | 29.99 | **Amazon** | 4.50 referral · 3.85 FBA · 0.55 storage/placement | 21.09 | 17.20 | 2.00 | **$1.89** | **6.3%** |
 | 2‑pack (2 chargers, as packaged) | 49.99 | DTC | 1.89 · 1.85 | 46.25 | 33.03 | 3.35 | **$9.87** | 19.7% |
 | 2‑pack (2 chargers, as packaged) | 49.99 | **Amazon** | 7.50 · 5.30 · 0.75 | 36.44 | 33.03 | 3.35 | **$0.06** | **0.1%** |
@@ -141,7 +141,7 @@ FBA tiers: the 1‑pack box is 44 mm thick, so it is **large standard**, not sma
 |---|---|---|---|
 | 1 · Product margin at list | (MSRP − factory cost) / MSRP | **46.0%** ← the `bom.md` figure | 46.0% |
 | 2 · Landed margin | less inbound freight, duty, brokerage | 42.6% | 42.6% |
-| 3 · Channel margin | less referral and fulfilment fees | 34.4% | 13.0% |
+| 3 · Channel margin | net revenue less landed cost | 33.7% | 13.0% |
 | 4 · **Contribution margin** | less payment, shipping and the returns/warranty reserve | **27.0%** | **6.3%** |
 
 **Use stage 4 everywhere.** Stages 1–3 are engineering and channel diagnostics. No forecast, investor deck or retail negotiation may quote stage 1. This document does not change `bom.md`; it adds the channel layer that `bom.md` explicitly defers to it (`bom.md` §2 points here by name). The two files should be reconciled with a one‑line cross‑reference at the next hardware review.
@@ -247,10 +247,12 @@ Ranked by value at base‑case volumes. Values are contribution, not revenue.
 | 2 | **Bare nRF52840 instead of the pre‑certified module** | −$1.60 BOM for ~$35k of certification; break‑even at 22k units | +$1.60 per tag from Y2 ≈ +$416k over Y2–Y3 | G1, jointly with the EE. Note this reverses the module's 3‑week schedule saving — a Y1 schedule cost for a Y2 margin gain |
 | 3 | **Non‑China final assembly** | Avoids a 7.5–25% duty | Up to **+$4.05 per unit**; at 25% it is the difference between a business and a loss | **CM selection, Jan 2027.** Treat as a GTM veto |
 | 4 | **Shift 10 points of mix from Amazon to DTC** | DTC contributes $6.21 more per 1‑pack | +$0.62 per tag ≈ +$16k Y1, +$177k over 3 years | Continuous. This is what the waitlist, the demo funnel and the gift card are *for* |
-| 5 | **One charger in the 2‑pack** | −$2.50 landed on 30% of tags | +$1.25 per 2‑pack unit ≈ +$9k Y1 | G1, with packaging |
+| 5 | **One charger in the 2‑pack** | −$2.50 landed on 30% of tags | +$2.50 per 2‑pack unit ($1.25 per tag) ≈ +$9k Y1 | G1, with packaging |
 | 6 | Mount attach 30% → 45% | +$2.78 blended per attached kit | +$0.42 per tag | Continuous: PDP cross‑sell, in‑box card, the app's "what else can it be?" prompt |
 
-**Break‑even sanity check.** At $5.78 contribution per tag, recovering $248–325k of NRE alone needs **43,000–56,000 tags** — roughly Y1 plus half of Y2 in the base case. With lever 1 and lever 3 both taken, it is 26,000–34,000 tags, inside Y1 plus Q1 of Y2. **Levers 1 and 3 are not optimisations; they are the difference between a self‑funding launch and a second raise.**
+**Break‑even sanity check.** At $5.78 contribution per tag, recovering the $248–325k of NRE alone needs **43,000–56,000 tags** — roughly all of Y1 plus half of Y2 in the base case, and that is before a dollar of GTM spend.
+
+Apply the +$5 move across the whole ladder (1‑pack $34.99, 2‑pack $54.99, 4‑pack $109.99) and contribution rises to **≈$9.97 per tag** — the $5 less the Amazon referral on 53% of volume, the payment fee on the rest, and the larger reserve. NRE payback then falls to **25,000–33,000 tags**, inside Y1 plus one quarter. Lever 3 does not add to this; it prevents the 25% duty case from erasing it. **Levers 1 and 3 are not optimisations. They are the difference between a self‑funding launch and a second raise.**
 
 ---
 
