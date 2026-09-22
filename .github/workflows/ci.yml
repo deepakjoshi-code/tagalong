@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    paths: ['app/**', 'content/**', 'firmware/**', '.github/workflows/ci.yml']
+  pull_request:
+    paths: ['app/**', 'content/**', 'firmware/**', '.github/workflows/ci.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  check:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate content packs
+        working-directory: .
+        run: node content/validate.mjs
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      - name: Check the bundle stays small
+        run: |
+          size=$(du -sk dist | cut -f1)
+          echo "dist is ${size} KiB"
+          if [ "$size" -gt 4096 ]; then
+            echo "::error::dist grew past 4 MiB (${size} KiB). Tagalong must stay installable on a slow connection."
+            exit 1
+          fi
+
+      - name: Assert no third-party network origins are referenced
+        run: node scripts/check-no-external-origins.mjs dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tagalong-dist
+          path: app/dist
+          retention-days: 14
+
+  e2e:
+    name: Playwright journeys
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tagalong-screenshots
+          path: app/e2e/__screenshots__
+          retention-days: 14
+
+  firmware:
+    name: Firmware host tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: firmware
+    steps:
+      - uses: actions/checkout@v4
+
+      # The protocol and utterance policy are plain C99, so they are tested on
+      # the host with no board and no Zephyr toolchain.
+      - name: Build and run host tests
+        run: make test
+
+      - name: Print the canonical wire vectors
+        run: make vectors

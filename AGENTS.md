@@ -1,6 +1,6 @@
 # Tagalong — Engineering Rules
 
-This directory is a **separate product** from the FinalSpec code at the repo root. The root `AGENTS.md` does not apply here; this file does. It will be split into its own repository (`git subtree split -P tagalong`).
+This is the Tagalong repository: a voice tag for children's objects, plus its companion app. The repo has no remote yet — it is created and pushed once, deliberately, when the founder is ready.
 
 Source of truth: `docs/00-product-brief.md`, then `docs/design/design-spec.md`, `docs/architecture/app-architecture.md`, `docs/protocol/tag-protocol.md`. If code and docs disagree, fix whichever is wrong and say so.
 
@@ -17,7 +17,9 @@ Source of truth: `docs/00-product-brief.md`, then `docs/design/design-spec.md`, 
 - TypeScript strict, no `any`, zod at boundaries. No new dependency without a one‑line justification in the PR/commit.
 - Components: accessible (labels, focus, 44 px targets), themed via tokens only (no hard‑coded colours), reduced‑motion aware.
 - Feature folders never import from each other.
-- `pnpm lint && pnpm typecheck && pnpm test && pnpm build` must pass before commit.
+- From `app/`: `pnpm lint && pnpm typecheck && pnpm test && pnpm build` must pass before commit.
+- From `firmware/`: `make test` must pass.
+- From the repo root: `node content/validate.mjs` must pass.
 
 ## Commits
 Conventional commits: `feat(app): …`, `docs(hw): …`, `fw: …`. Small, scoped.
