@@ -5,10 +5,11 @@
   gap: 2px;
   padding: 2px;
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 .item {
-  min-height: 36px;
+  /* 44px so each option is a real tap target, per the design spec. */
+  min-height: 44px;
   border-radius: 8px;
   font: var(--text-subhead);
   font-weight: 600;

@@ -1,13 +1,23 @@
 .toggle {
+  /* The visible track is 51x31 like the platform switch, but the control itself
+     is 44px tall so it meets the minimum tap target. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 51px;
+  height: 44px;
+  background: none;
+  flex-shrink: 0;
+}
+.track {
   position: relative;
   width: 51px;
   height: 31px;
   border-radius: var(--r-pill);
   background: var(--surface-3);
   transition: background-color var(--dur) var(--ease-out);
-  flex-shrink: 0;
 }
-.toggle[aria-checked='true'] {
+.toggle[aria-checked='true'] .track {
   background: var(--success);
 }
 .knob {
@@ -23,6 +33,9 @@
 }
 .toggle[aria-checked='true'] .knob {
   transform: translateX(20px);
+}
+.toggle:focus-visible {
+  border-radius: var(--r-pill);
 }
 .toggle:disabled {
   opacity: 0.4;

@@ -54,6 +54,7 @@ export function Welcome() {
 
   return (
     <div className={s.screen}>
+      <h1 className="visually-hidden">Welcome to Tagalong</h1>
       <div className={s.top}>
         {!last && (
           <button type="button" className={s.skip} onClick={() => finish('/tags')}>
@@ -71,7 +72,7 @@ export function Welcome() {
               <ThingIcon thing="backpack" size={84} mood="curious" />
             </div>
           </div>
-          <h1 className={s.title}>Give anything a voice.</h1>
+          <h2 className={s.title}>Give anything a voice.</h2>
           <p className={s.text}>
             Tagalong turns a water bottle, lunchbox or backpack into a friend who giggles, cheers and says
             “ouch” when it takes a tumble.
@@ -84,7 +85,7 @@ export function Welcome() {
               <ShieldCheck size={84} strokeWidth={1.6} aria-hidden="true" />
             </div>
           </div>
-          <h1 className={s.title}>Made for kids. Private by design.</h1>
+          <h2 className={s.title}>Made for kids. Private by design.</h2>
           <p className={s.text}>Everything stays on this phone and on the tag. We literally can’t see your data.</p>
           <div className={s.pillars}>
             <Chip>No account</Chip>
@@ -98,7 +99,7 @@ export function Welcome() {
           <div className={s.hero}>
             <img className={s.tagArt} src={`${import.meta.env.BASE_URL}icons/icon.svg`} alt="" width={176} height={176} />
           </div>
-          <h1 className={s.title}>Set up your first tag in 60 seconds.</h1>
+          <h2 className={s.title}>Set up your first tag in 60 seconds.</h2>
           <p className={s.text}>Pick who it’s for, what it’s attached to, and a personality. That’s it.</p>
         </section>
       </div>

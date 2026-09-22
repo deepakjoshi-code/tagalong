@@ -20,7 +20,9 @@ export function Toggle({ checked, onChange, label, disabled, id }: ToggleProps) 
       className={s.toggle}
       onClick={() => onChange(!checked)}
     >
-      <span className={s.knob} aria-hidden="true" />
+      <span className={s.track} aria-hidden="true">
+        <span className={s.knob} />
+      </span>
     </button>
   )
 }

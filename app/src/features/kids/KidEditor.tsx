@@ -81,6 +81,7 @@ export function KidEditor() {
     <Screen noTabBar top={<NavBar title={isNew ? 'New kid' : 'Kid'} backTo="/kids" backLabel="Kids" />}>
       <div className={s.head}>
         <Avatar name={name || kid?.displayName} seed={kid?.id ?? 'new'} size={88} />
+        <h1 className={s.heading}>{isNew ? 'Add a kid' : name.trim() || kid?.displayName || 'This kid'}</h1>
       </div>
 
       <div className={s.field}>

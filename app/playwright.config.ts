@@ -20,7 +20,9 @@ export default defineConfig({
   webServer: {
     command: 'pnpm build && pnpm preview',
     url: 'http://localhost:4173',
-    reuseExistingServer: true,
-    timeout: 120_000,
+    // Never reuse: a left-over preview server serves a stale dist, and the suite
+    // then reports on code that is not the code you just changed.
+    reuseExistingServer: false,
+    timeout: 180_000,
   },
 })
