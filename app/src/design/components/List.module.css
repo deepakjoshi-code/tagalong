@@ -78,6 +78,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.wrap .title {
+  white-space: normal;
+  overflow: visible;
+  text-wrap: pretty;
+}
 .subtitle {
   font: var(--text-footnote);
   color: var(--text-2);

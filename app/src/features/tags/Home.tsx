@@ -1,7 +1,8 @@
 import { Download, Plus, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Button, Card, EmptyState, IconButton, LinkButton, Screen, ThingIcon } from '@/design/components'
-import { lastEventForTag } from '@/domain/selectors'
+import type { TagEvent } from '@/domain/types'
 import { useStore } from '@/domain/store'
 import { useInstallPrompt } from '@/lib/install'
 import s from './Home.module.css'
@@ -12,6 +13,7 @@ export function Home() {
   const kids = useStore((st) => st.kids)
   const events = useStore((st) => st.events)
   const demoMode = useStore((st) => st.settings.demoMode)
+  const navigate = useNavigate()
   const { canInstall, install } = useInstallPrompt()
   const [installDismissed, setInstallDismissed] = useState(false)
   const [now, setNow] = useState(() => Date.now())
@@ -21,14 +23,22 @@ export function Home() {
     return () => clearInterval(t)
   }, [])
 
-  const data = { tags, kids, events }
+  // One pass over the log gives each tag its newest event, without rebuilding arrays per card.
+  const latestByTag = useMemo(() => {
+    const map = new Map<string, TagEvent>()
+    for (const e of events) {
+      const current = map.get(e.tagId)
+      if (!current || e.at > current.at) map.set(e.tagId, e)
+    }
+    return map
+  }, [events])
 
   return (
     <Screen
       title="Tags"
       subtitle={demoMode ? 'Demo mode is on' : undefined}
       trailing={
-        <IconButton label="Add a tag" variant="accent" onClick={() => (window.location.href = '/tags/new')}>
+        <IconButton label="Add a tag" variant="accent" onClick={() => navigate('/tags/new')}>
           <Plus size={24} strokeWidth={2.4} />
         </IconButton>
       }
@@ -77,7 +87,7 @@ export function Home() {
               key={tag.id}
               tag={tag}
               kid={kids.find((k) => k.id === tag.kidId)}
-              lastEvent={lastEventForTag(data as never, tag.id)}
+              lastEvent={latestByTag.get(tag.id)}
               now={now}
             />
           ))}

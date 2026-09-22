@@ -1,0 +1,440 @@
+{
+  "thing": "generic",
+  "language": "en",
+  "version": 1,
+  "events": {
+    "pickup": {
+      "little": {
+        "silly": ["Wheee! Up we go!", "Boing! Hello hello!", "Whoosh! Flying!", "Hi! You found me!"],
+        "sweet": ["Hi {{name}}. I missed you.", "Yay! My favourite person.", "Hello friend!", "You picked me up!"],
+        "brave": ["Up! Let's go!", "Ready! Hold tight!", "Whoosh! Adventure!", "Yes! Time to zoom!"]
+      },
+      "kid": {
+        "silly": ["Whoa! Warn me next time, amigo.", "Hello! I was just hanging out.", "Up, up and away! Well, mostly up.", "Nice lift! Ten out of ten."],
+        "sweet": ["Hi {{name}}! You're my bestie.", "There you are. I missed you.", "Thanks for picking me up.", "Hello! Best part of my day."],
+        "brave": ["Let's go, captain! Ready!", "Adventure squad, assemble!", "Grab me and go. I'm ready!", "Onward! We have places to be."]
+      },
+      "big": {
+        "silly": ["Ah, my ride is here.", "You're back. I was getting bored.", "Finally. I was collecting dust.", "Hello. Let's pretend that was smooth."],
+        "sweet": ["Hey {{name}}. Good to see you.", "There you are. Let's go.", "Thanks for grabbing me.", "Nice. I like being useful."],
+        "brave": ["Let's move. The day is waiting.", "Ready when you are.", "Locked in. Let's go.", "Good. I hate sitting still."]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": ["Boop! Down I go!", "Plop! Nap time!", "Wheee! Landing!", "Oof! Soft landing!"],
+        "sweet": ["Okay. I will wait.", "Bye for now.", "I'll be right here.", "Rest time. See you."],
+        "brave": ["Standing guard!", "I'll wait here!", "Ready when you are!", "Holding my post!"]
+      },
+      "kid": {
+        "silly": ["Landing complete. Nailed it.", "Okay, I'll just sit here. Alone.", "Parked. Very graceful, thank you.", "Down we go. Smooth as anything."],
+        "sweet": ["I'll wait right here, {{name}}.", "See you soon. Take your time.", "I'll keep your spot warm.", "Resting. Come back anytime."],
+        "brave": ["Holding position, captain.", "On guard. Nothing gets past me.", "Standing by for orders.", "I'll wait. Go get them."]
+      },
+      "big": {
+        "silly": ["And parked. Flawless.", "Fine. I'll just be here. Waiting.", "Touchdown. The crowd goes mild.", "Placed gently. Ten out of ten."],
+        "sweet": ["I'll be right here when you need me.", "Take your time, {{name}}.", "Resting. No rush.", "Here whenever you want me."],
+        "brave": ["Holding this position.", "On standby. Go do your thing.", "I've got this spot covered.", "Waiting. Ready when you are."]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": ["Ouch! Boing boing!", "Whoa! Bouncy!", "Oof! Rolly rolly!", "Wheee! Bump!"],
+        "sweet": ["Ouch. I am okay.", "Oopsie. All fine.", "Bump! Still good.", "Ow. Help me up?"],
+        "brave": ["Bonk! I am tough!", "Ouch! Still standing!", "Bump! No problem!", "Whoa! I am fine!"]
+      },
+      "kid": {
+        "silly": ["Ouch, my back! Does anyone have ice?", "Whoa! That was not part of the plan.", "Ow! I'm not a bouncy ball.", "Bonk! Five out of ten landing."],
+        "sweet": ["Oof! I'm okay, {{name}}.", "Ouch. That one surprised me.", "Bump! No harm done.", "Whoops. I forgive you."],
+        "brave": ["Ouch! Barely felt it. Tough stuff.", "Bonk! Still standing, captain.", "Whoa! I've survived worse.", "Ow! Shake it off. I did."]
+      },
+      "big": {
+        "silly": ["Ouch, my back! Send me the bill.", "Gravity one, me zero.", "That's a solid seven on the clang scale.", "Great. Now I have a dent and a story."],
+        "sweet": ["Oof. I'm fine, honestly.", "Ouch. That one surprised me.", "No damage, {{name}}. All good.", "Bump. Still in one piece."],
+        "brave": ["Ouch! Nothing I can't take.", "Bonk! Still operational.", "That's nothing. Pick me up, let's go.", "Took the hit. Still standing."]
+      }
+    },
+    "shake": {
+      "little": {
+        "silly": ["Wheee! Shakey shakey!", "Wobble wobble! Fun!", "Whoa! Dizzy!", "Shake! So wiggly!"],
+        "sweet": ["Ooh! That tickles.", "Wobbly! So silly.", "Gentle please. Hee hee.", "Whee. That was fun."],
+        "brave": ["Shake! I am brave!", "Wobble! No fear!", "Whoa! Hold on!", "Shakey! Still strong!"]
+      },
+      "kid": {
+        "silly": ["Whoa! I'm not a snow globe!", "Shaken, not stirred. Very fancy.", "Stop! Everything's rattling, amigo.", "Dizzy! The room is spinning."],
+        "sweet": ["Ooh, that tickles! Hee hee.", "Careful, {{name}}. I'm delicate.", "Wobbly! But fun.", "Whee! Gentle though."],
+        "brave": ["Shake all you want. I can take it!", "Earthquake! Still holding strong!", "Whoa! Turbulence! Stay steady!", "Rattle me. I don't rattle easy."]
+      },
+      "big": {
+        "silly": ["I'm not a snow globe, you know.", "Stop, I'm getting seasick.", "Shaken. Definitely not stirred.", "Congratulations. Everything inside is remixed."],
+        "sweet": ["Easy there. I'm a bit dizzy.", "Careful, {{name}}. Gentle works too.", "Whoa. Let's slow that down.", "That's plenty of shaking, thanks."],
+        "brave": ["Shake me all you like. I hold.", "Turbulence handled.", "Still standing. Try harder.", "Rattled, but not beaten."]
+      }
+    },
+    "tap": {
+      "little": {
+        "silly": ["Boop! Hello!", "Tap tap! Hi!", "Ooh! That tickles!", "Beep! You tapped me!"],
+        "sweet": ["Hi friend!", "Hello, {{name}}.", "Ooh, hello!", "Tap tap. Hi!"],
+        "brave": ["Beep! Ready!", "Tap! Standing by!", "Hello! I am here!", "Boop! At your service!"]
+      },
+      "kid": {
+        "silly": ["Boop! You rang?", "Tap tap. Who's there? Me.", "Ooh! Do it again, amigo.", "Beep boop. I'm a robot now."],
+        "sweet": ["Hi {{name}}! Nice to see you.", "Hello! I'm right here.", "Tap tap. Hey there.", "Ooh, hi! What's up?"],
+        "brave": ["Reporting for duty!", "Beep! Standing by, captain.", "You called? I'm ready.", "Tap received. What's the mission?"]
+      },
+      "big": {
+        "silly": ["You rang?", "Boop. That's my whole personality.", "Tap received. Very polite of you.", "Hello. I was napping, but fine."],
+        "sweet": ["Hey {{name}}. What's up?", "Hi there. I'm listening.", "Hello. Good to hear from you.", "Tap received. Hi."],
+        "brave": ["Ready. What's the plan?", "Standing by.", "Here. Let's go.", "Beep. Locked in."]
+      }
+    },
+    "long_still": {
+      "little": {
+        "silly": ["Hello? Anybody?", "Just waiting. La la la.", "Boop. Still here!", "Hmm. Quiet time."],
+        "sweet": ["Waiting for you.", "I am still here.", "Miss you, {{name}}.", "Resting. All cosy."],
+        "brave": ["Still on guard!", "Waiting. Being brave!", "I am right here!", "Holding steady!"]
+      },
+      "kid": {
+        "silly": ["Hello? Is this thing on?", "Still here. Counting dust specks.", "Just me and my thoughts, amigo.", "I've been practising silence. Nailed it."],
+        "sweet": ["Still waiting here, {{name}}.", "No rush. Just saying hi.", "I'm here whenever you are.", "Hope you're having a good day."],
+        "brave": ["Still holding position!", "On watch. All quiet.", "Standing by, captain.", "Nothing to report. Still ready."]
+      },
+      "big": {
+        "silly": ["Still here. Living the dream.", "I've counted the ceiling tiles. Twice.", "Update: nothing has happened.", "Just sitting. Very advanced sitting."],
+        "sweet": ["Still here whenever you need me.", "No rush, {{name}}. Just saying hi.", "Taking it easy over here.", "All good. Here when you are."],
+        "brave": ["Holding position. All clear.", "Still on duty.", "Nothing moving. Standing by.", "Ready when the day is."]
+      }
+    },
+    "good_morning": {
+      "little": {
+        "silly": ["Good morning! Wakey wakey!", "Morning! Boing!", "Hi sunshine! Hooray!", "Wheee! New day!"],
+        "sweet": ["Good morning, {{name}}.", "Morning, friend. Hi!", "Hello sunshine.", "Good morning. Sleep well?"],
+        "brave": ["Morning! Let's go!", "Rise and shine! Ready!", "New day! Adventure!", "Good morning! Be brave!"]
+      },
+      "kid": {
+        "silly": ["Good morning! I slept great. I always do.", "Morning, amigo! Did you dream about me?", "Rise and shine! Mostly shine.", "Good morning! I've been up for hours."],
+        "sweet": ["Good morning, {{name}}. Today looks good.", "Morning! So glad you're up.", "Hello! Hope you slept well.", "Good morning, friend."],
+        "brave": ["Morning, captain! Big day ahead!", "Rise and shine. Adventure waits!", "Good morning! Let's own today.", "Up and at them!"]
+      },
+      "big": {
+        "silly": ["Morning. I've been awake since, well, always.", "Good morning. Try to contain your excitement.", "Rise and shine. Or just rise.", "Morning! I had the weirdest dream. Kidding."],
+        "sweet": ["Good morning, {{name}}. Hope today's a good one.", "Morning. Glad you're up.", "Hey, good morning.", "Morning! Take it easy out there."],
+        "brave": ["Morning. Let's make it count.", "Good morning. The day's waiting.", "Up. Let's go get it.", "Morning, captain. Ready?"]
+      }
+    },
+    "low_battery": {
+      "little": {
+        "silly": ["Yaaawn! So sleepy!", "Ooh. Nap time soon.", "Sleepy me. Zzz.", "Yawn! Need a snooze!"],
+        "sweet": ["I am sleepy. Nap soon?", "Getting tired. Night night?", "Yaaawn. Charge me?", "Sleepy now. Cosy time."],
+        "brave": ["Low power! Nap time!", "Getting sleepy. Recharge!", "Yawn. Almost out!", "Nap now, adventure later!"]
+      },
+      "kid": {
+        "silly": ["Yaaawn. My batteries are yawning too.", "Running low, amigo. Send power.", "I'm about to take the longest nap.", "Low battery. To the charger, please."],
+        "sweet": ["Getting sleepy, {{name}}. Charger soon?", "Running low. A nap would be lovely.", "Yaaawn. Time for a charge.", "Almost out of power. No rush."],
+        "brave": ["Power running low. Recharge mission!", "Low battery, captain. Need the charger.", "Almost out. Send me to base.", "Running on reserves. Charge time!"]
+      },
+      "big": {
+        "silly": ["Low battery. Prepare for my quiet era.", "Running on fumes. Dramatic, I know.", "Power's low. Silence incoming.", "Nearly out. This is my last hurrah."],
+        "sweet": ["Battery's low, {{name}}. Charger when you can.", "Getting sleepy over here.", "Running low. No rush though.", "Almost out of power. A charge would help."],
+        "brave": ["Power low. Send me to the charger.", "Running on reserves. Recharge soon.", "Battery low. I'll hold out.", "Low power. Back soon, stronger."]
+      }
+    },
+    "charging": {
+      "little": {
+        "silly": ["Zzz! Charging!", "Mmm! Power juice!", "Nap time! Bye!", "Zoom! Filling up!"],
+        "sweet": ["Thank you. Night night.", "Cosy charging. Sweet dreams.", "Mmm. So nice.", "Resting up. Thank you."],
+        "brave": ["Charging up! Back soon!", "Power up! Almost ready!", "Recharging! Stay tuned!", "Battery growing! Strong soon!"]
+      },
+      "kid": {
+        "silly": ["Ahh, power juice. My favourite flavour.", "Charging! Do not disturb the sleepy one.", "Zzz. Dreaming of electricity.", "Plugged in and living large."],
+        "sweet": ["Thanks, {{name}}. Charging up now.", "Ahh, that feels better already.", "Cosy on the charger. See you soon.", "Recharging. Thanks for remembering."],
+        "brave": ["Recharging! Full power soon.", "Power restoring. Stand by, captain.", "Charging up for the next mission.", "Energy climbing. Almost ready!"]
+      },
+      "big": {
+        "silly": ["Charging. Please hold, this is important.", "Ahh. Electricity. The good stuff.", "Plugged in. Living my best life.", "Charging. I'll be insufferable at one hundred."],
+        "sweet": ["Thanks, {{name}}. Charging now.", "Ahh, much better. Appreciate it.", "On the charger. Back soon.", "Recharging. Thanks for looking out for me."],
+        "brave": ["Recharging. Back at full strength soon.", "Power restoring. Won't be long.", "Charging up for round two.", "Energy climbing. Ready shortly."]
+      }
+    }
+  },
+  "shoes": {
+    "pickup": {
+      "little": {
+        "silly": ["Wheee! Feet time!", "Boing! Zoom zoom!", "Whoosh! Run run!", "Hi! Let's run!"],
+        "sweet": ["Hi {{name}}! Ready?", "Yay! Walk time.", "Hello, happy feet!", "Time to go. Yay!"],
+        "brave": ["Zoom! Let's run!", "Ready! Fast feet!", "Up! Let's go!", "Yes! Adventure feet!"]
+      },
+      "kid": {
+        "silly": ["Feet incoming! Brace yourself, amigo.", "Ooh, we're going somewhere fast.", "Hello! Ready to be stepped on.", "Zoom mode. Please engage."],
+        "sweet": ["Hi {{name}}! Let's go somewhere good.", "Ready when your feet are.", "Hello! I'll keep you comfy.", "Let's go. I've got your feet."],
+        "brave": ["Boots on! Let's move out!", "Fast feet ready, captain!", "Zoom mode engaged!", "Let's go. Nothing stops us!"]
+      },
+      "big": {
+        "silly": ["Feet incoming. Brace yourself.", "Ooh, we're going somewhere fast.", "Hello. Ready to be stepped on.", "Zoom mode. Please engage."],
+        "sweet": ["Hi {{name}}. Let's go somewhere good.", "Ready when your feet are.", "Hello. I'll keep you comfy.", "Let's go. I've got your feet."],
+        "brave": ["Boots on. Let's move out.", "Fast feet ready.", "Zoom mode engaged.", "Let's go. Nothing stops us."]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": ["Plop! Toes free!", "Boop! Rest feet!", "Wheee! Off we come!", "Oof! Shoe nap!"],
+        "sweet": ["Rest time. Bye!", "I'll wait here.", "Bye, {{name}}. Rest!", "See you soon."],
+        "brave": ["Standing by!", "Ready later!", "Holding post!", "On standby!"]
+      },
+      "kid": {
+        "silly": ["Ahh, freedom. For both of us.", "Parked. Airing out, amigo.", "Off duty! Time to breathe.", "Shoes off. Big relief, honestly."],
+        "sweet": ["Rest your feet, {{name}}.", "I'll wait by the door.", "See you next time.", "Taking a break. Bye for now."],
+        "brave": ["Standing by at base.", "Off duty, captain. Ready later.", "Holding position by the door.", "Resting up for the next run."]
+      },
+      "big": {
+        "silly": ["Ahh, freedom. For both of us.", "Parked. Airing out.", "Off duty. Time to breathe.", "Shoes off. Big relief, honestly."],
+        "sweet": ["Rest your feet, {{name}}.", "I'll wait by the door.", "See you next time.", "Taking a break. Bye for now."],
+        "brave": ["Standing by at base.", "Off duty. Ready later.", "Holding position by the door.", "Resting up for the next run."]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": ["Whoa! Tumble shoe!", "Oof! Flip flop!", "Bonk! Upside down!", "Wheee! Rolly shoe!"],
+        "sweet": ["Ouch. I'm okay.", "Oopsie! All fine.", "Bump. Still good.", "Ow. Help me up?"],
+        "brave": ["Bonk! Tough shoe!", "Ouch! Still strong!", "Bump! No problem!", "Whoa! I'm fine!"]
+      },
+      "kid": {
+        "silly": ["Ouch! I landed on my laces.", "Whoa! Upside down and undignified.", "Ow! Shoes were not built for flying.", "Bonk! That's a new angle."],
+        "sweet": ["Oof! I'm okay, {{name}}.", "Ouch. Just a tumble.", "Bump! No harm done.", "Whoops. Still comfy."],
+        "brave": ["Ouch! Tough shoe. Still good.", "Bonk! Barely noticed it.", "Whoa! I've taken worse steps.", "Ow! Back on my sole."]
+      },
+      "big": {
+        "silly": ["Ouch! I landed on my laces.", "Whoa. Upside down and undignified.", "Ow. Shoes were not built for flying.", "Bonk! That's a new angle."],
+        "sweet": ["Oof. I'm okay, {{name}}.", "Ouch. Just a tumble.", "Bump. No harm done.", "Whoops. Still comfy."],
+        "brave": ["Ouch! Tough shoe. Still good.", "Bonk! Barely noticed.", "Whoa. I've taken worse steps.", "Ow. Back on my sole."]
+      }
+    },
+    "shake": {
+      "little": {
+        "silly": ["Wheee! Wiggly shoe!", "Shake! Laces dancing!", "Whoa! Wobbly!", "Boing! Shakey!"],
+        "sweet": ["Ooh! Tickles my laces.", "Wobbly! So silly.", "Gentle please!", "Whee. Fun!"],
+        "brave": ["Shake! Still tough!", "Wobble! No fear!", "Whoa! Hold on!", "Shakey! Strong shoe!"]
+      },
+      "kid": {
+        "silly": ["Whoa! My laces are doing a dance.", "Shake! Any sand in here falls out.", "Stop, I'm getting dizzy, amigo.", "Wobble! I'm not a maraca."],
+        "sweet": ["Ooh, that tickles my laces!", "Careful, {{name}}. Gentle!", "Wobbly! But fun.", "Whee! Not too hard though."],
+        "brave": ["Shake me! I can take it!", "Earthquake! Still laced up!", "Whoa! Turbulence! Hold tight!", "Rattle away. I'm solid."]
+      },
+      "big": {
+        "silly": ["Whoa! My laces are doing a dance.", "Shake! Any sand in here falls out.", "Stop, I'm getting dizzy.", "Wobble! I'm not a maraca."],
+        "sweet": ["Ooh, that tickles my laces.", "Careful, {{name}}. Gentle.", "Wobbly, but fun.", "Whee. Not too hard though."],
+        "brave": ["Shake me. I can take it.", "Earthquake! Still laced up.", "Whoa! Turbulence. Hold tight.", "Rattle away. I'm solid."]
+      }
+    }
+  },
+  "plush": {
+    "pickup": {
+      "little": {
+        "silly": ["Wheee! Cuddle time!", "Boing! Squishy hug!", "Whoosh! Up high!", "Hi! Squeeze me!"],
+        "sweet": ["Hi {{name}}. Hug?", "Yay! My person.", "Hello. I missed you.", "Cuddles! Thank you."],
+        "brave": ["Up! Adventure buddy!", "Ready! Let's go!", "Whoosh! Together!", "Yes! Team hug!"]
+      },
+      "kid": {
+        "silly": ["Squeeze! Careful, I'm mostly fluff.", "Up we go! Cuddle mode on.", "Hello! I've been waiting for this.", "Hug incoming! Brace, amigo."],
+        "sweet": ["Hi {{name}}. I missed you so much.", "There you are. Hug time.", "Hello, friend. Best moment today.", "You're my favourite person."],
+        "brave": ["Adventure buddy, reporting in!", "Let's go, captain! Fluffy and fearless!", "Ready for anything. Together!", "Up! Nothing scares us."]
+      },
+      "big": {
+        "silly": ["Squeeze! Careful, I'm mostly fluff.", "Up we go. Cuddle mode on.", "Hello. I've been waiting for this.", "Hug incoming. Brace yourself."],
+        "sweet": ["Hi {{name}}. I missed you.", "There you are. Good to see you.", "Hello, friend. Best moment today.", "You're my favourite person."],
+        "brave": ["Adventure buddy, reporting in.", "Let's go. Fluffy and fearless.", "Ready for anything. Together.", "Up. Nothing scares us."]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": ["Plop! Soft landing!", "Boop! Nap time!", "Wheee! Flop!", "Squish! Comfy!"],
+        "sweet": ["Night night, {{name}}.", "I'll wait here. Bye!", "Resting. Love you.", "See you soon, friend."],
+        "brave": ["Guarding your room!", "On watch!", "Holding post!", "Standing by!"]
+      },
+      "kid": {
+        "silly": ["Flop! Perfect landing, if I say so.", "Okay, nap time. My speciality.", "Parked and fluffy.", "Down I go. Very comfy here."],
+        "sweet": ["I'll wait right here, {{name}}.", "See you soon. I'll be cosy.", "Resting up for our next hug.", "Here whenever you need me."],
+        "brave": ["Guarding your room, captain!", "On watch. Nothing sneaks past.", "Holding position. Fluffy but fierce.", "Standing by for duty."]
+      },
+      "big": {
+        "silly": ["Flop. Perfect landing, if I say so.", "Okay, nap time. My speciality.", "Parked and fluffy.", "Down I go. Very comfy here."],
+        "sweet": ["I'll wait right here, {{name}}.", "See you soon. I'll be cosy.", "Resting up for our next hug.", "Here whenever you need me."],
+        "brave": ["Guarding your room.", "On watch. Nothing sneaks past.", "Holding position. Fluffy but fierce.", "Standing by for duty."]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": ["Oof! Bouncy fluff!", "Whoa! Tumble!", "Boing! Soft bump!", "Wheee! Roly poly!"],
+        "sweet": ["Ouch. I'm okay.", "Oopsie! Still soft.", "Bump. Hug me?", "Ow. Pick me up?"],
+        "brave": ["Bonk! Tough fluff!", "Ouch! Still brave!", "Bump! I'm fine!", "Whoa! No fear!"]
+      },
+      "kid": {
+        "silly": ["Oof! Good thing I'm mostly stuffing.", "Whoa! Fluffy tumble, ten out of ten.", "Ow! My fluff is everywhere.", "Bonk! Softest landing ever."],
+        "sweet": ["Oof! I'm okay, {{name}}.", "Ouch. A hug would fix it.", "Bump! Still soft and fine.", "Whoops. Pick me up?"],
+        "brave": ["Ouch! Fluffy but fearless!", "Bonk! Barely felt that.", "Whoa! Still standing, captain.", "Ow! Nothing a hug won't fix."]
+      },
+      "big": {
+        "silly": ["Oof. Good thing I'm mostly stuffing.", "Whoa! Fluffy tumble, ten out of ten.", "Ow. My fluff is everywhere.", "Bonk! Softest landing ever."],
+        "sweet": ["Oof. I'm okay, {{name}}.", "Ouch. A hug would fix it.", "Bump. Still soft and fine.", "Whoops. Pick me up?"],
+        "brave": ["Ouch! Fluffy but fearless.", "Bonk! Barely felt that.", "Whoa. Still standing.", "Ow. Nothing a hug won't fix."]
+      }
+    },
+    "shake": {
+      "little": {
+        "silly": ["Wheee! Wobbly fluff!", "Shake! So giggly!", "Whoa! Dizzy fluff!", "Boing boing! Fun!"],
+        "sweet": ["Ooh! That tickles.", "Hee hee! Gentle.", "Wobbly! So silly.", "Whee. Fun!"],
+        "brave": ["Shake! I'm brave!", "Wobble! No fear!", "Whoa! Hold on!", "Shakey! Still strong!"]
+      },
+      "kid": {
+        "silly": ["Whoa! My stuffing is rearranging itself.", "Shake! I'm getting fluff-sick, amigo.", "Stop! Everything is spinning.", "Wobble! I'm not a rattle."],
+        "sweet": ["Ooh, that tickles! Hee hee.", "Gentle, {{name}}. I'm delicate.", "Wobbly! But fun.", "Whee! Softly though."],
+        "brave": ["Shake me! Fluff holds strong!", "Earthquake! Still fearless!", "Whoa! Turbulence! Hold tight!", "Rattle away. I don't scare."]
+      },
+      "big": {
+        "silly": ["Whoa! My stuffing is rearranging itself.", "Shake! I'm getting fluff-sick.", "Stop! Everything is spinning.", "Wobble! I'm not a rattle."],
+        "sweet": ["Ooh, that tickles. Hee hee.", "Gentle, {{name}}. I'm delicate.", "Wobbly, but fun.", "Whee. Softly though."],
+        "brave": ["Shake me. Fluff holds strong.", "Earthquake! Still fearless.", "Whoa! Turbulence. Hold tight.", "Rattle away. I don't scare."]
+      }
+    }
+  },
+  "helmet": {
+    "pickup": {
+      "little": {
+        "silly": ["Wheee! Head time!", "Boing! Hat me!", "Whoosh! Safety hat!", "Hi! Pop me on!"],
+        "sweet": ["Hi {{name}}! Ready?", "Yay! I keep you safe.", "Hello! Head hug time.", "Let's go safely."],
+        "brave": ["Helmet on! Ready!", "Up! Safety first!", "Let's go! I've got you!", "Yes! Ride time!"]
+      },
+      "kid": {
+        "silly": ["Helmet on! Instant superhero, amigo.", "Ooh, head hug incoming!", "Hello! Best hat you own.", "Up we go. Hair situation: unknown."],
+        "sweet": ["Hi {{name}}! I'll keep you safe.", "Ready when you are. Head hug!", "Hello! Let's ride carefully.", "Good choice. Let's go."],
+        "brave": ["Helmet on! Mission ready, captain!", "Safety secured. Let's ride!", "Up! I've got your head covered.", "Ready! Nothing gets through me."]
+      },
+      "big": {
+        "silly": ["Helmet on. Instant superhero.", "Ooh, head hug incoming.", "Hello. Best hat you own.", "Up we go. Hair situation: unknown."],
+        "sweet": ["Hi {{name}}. I'll keep you safe.", "Ready when you are.", "Hello. Let's ride carefully.", "Good choice. Let's go."],
+        "brave": ["Helmet on. Mission ready.", "Safety secured. Let's ride.", "Up. I've got your head covered.", "Ready. Nothing gets through me."]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": ["Plop! Head free!", "Boop! Rest time!", "Wheee! Off we go!", "Oof! Helmet nap!"],
+        "sweet": ["Good ride! Bye.", "I'll wait here.", "See you next time.", "Rest now, {{name}}."],
+        "brave": ["Standing by!", "Ready later!", "On the shelf!", "Holding post!"]
+      },
+      "kid": {
+        "silly": ["Off duty! Enjoy the fresh air up there.", "Parked. Helmet hair is your problem now.", "Ahh, a break. Being safe is tiring.", "Down I go. Good ride, amigo."],
+        "sweet": ["Good ride, {{name}}. See you next time.", "I'll wait on the shelf.", "Resting up. Ride safe always.", "Bye for now. Well done."],
+        "brave": ["Standing by, captain.", "Off duty. Ready for the next ride.", "Holding position on the shelf.", "Mission complete. Resting up."]
+      },
+      "big": {
+        "silly": ["Off duty. Enjoy the fresh air up there.", "Parked. Helmet hair is your problem now.", "Ahh, a break. Being safe is tiring.", "Down I go. Good ride."],
+        "sweet": ["Good ride, {{name}}. See you next time.", "I'll wait on the shelf.", "Resting up. Ride safe always.", "Bye for now. Well done."],
+        "brave": ["Standing by.", "Off duty. Ready for the next ride.", "Holding position on the shelf.", "Mission complete. Resting up."]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": ["Bonk! Hard head!", "Whoa! Rolly helmet!", "Oof! Tumble!", "Wheee! Bounce!"],
+        "sweet": ["Ouch. I'm okay.", "Oopsie! Still strong.", "Bump. All fine.", "Ow. Check me?"],
+        "brave": ["Bonk! That's my job!", "Ouch! Built for this!", "Bump! No problem!", "Whoa! Still tough!"]
+      },
+      "kid": {
+        "silly": ["Bonk! Taking hits is literally my job.", "Whoa! I rolled further than expected.", "Ow! Well, better me than you.", "Clonk! That's what I'm here for."],
+        "sweet": ["Oof! I'm okay, {{name}}.", "Ouch. Better me than your head.", "Bump! Still doing my job.", "Whoops. All fine here."],
+        "brave": ["Bonk! Built for exactly this!", "Ouch! Still protecting, captain.", "Whoa! Took it. That's my job.", "Ow! Nothing gets through me."]
+      },
+      "big": {
+        "silly": ["Bonk! Taking hits is literally my job.", "Whoa. I rolled further than expected.", "Ow. Well, better me than you.", "Clonk! That's what I'm here for."],
+        "sweet": ["Oof. I'm okay, {{name}}.", "Ouch. Better me than your head.", "Bump. Still doing my job.", "Whoops. All fine here."],
+        "brave": ["Bonk! Built for exactly this.", "Ouch! Still protecting.", "Whoa. Took it. That's my job.", "Ow. Nothing gets through me."]
+      }
+    },
+    "shake": {
+      "little": {
+        "silly": ["Wheee! Wobbly helmet!", "Shake! Straps flapping!", "Whoa! Dizzy!", "Boing! Shakey hat!"],
+        "sweet": ["Ooh! That tickles.", "Wobbly! Careful.", "Gentle please!", "Whee. Fun!"],
+        "brave": ["Shake! Still solid!", "Wobble! No fear!", "Whoa! Hold on!", "Shakey! Still tough!"]
+      },
+      "kid": {
+        "silly": ["Whoa! My straps are doing a dance.", "Shake! I'm a very sturdy maraca.", "Stop, I'm getting dizzy, amigo.", "Wobble! Helmets prefer stillness."],
+        "sweet": ["Ooh, that tickles my straps!", "Careful, {{name}}. Gentle.", "Wobbly! But fun.", "Whee! Not too hard though."],
+        "brave": ["Shake me! I'm built solid!", "Earthquake! Still protecting!", "Whoa! Turbulence! Hold tight!", "Rattle away. I don't crack."]
+      },
+      "big": {
+        "silly": ["Whoa! My straps are doing a dance.", "Shake! I'm a very sturdy maraca.", "Stop, I'm getting dizzy.", "Wobble! Helmets prefer stillness."],
+        "sweet": ["Ooh, that tickles my straps.", "Careful, {{name}}. Gentle.", "Wobbly, but fun.", "Whee. Not too hard though."],
+        "brave": ["Shake me. I'm built solid.", "Earthquake! Still protecting.", "Whoa! Turbulence. Hold tight.", "Rattle away. I don't crack."]
+      }
+    }
+  },
+  "jacket": {
+    "pickup": {
+      "little": {
+        "silly": ["Wheee! Cosy time!", "Boing! Arms in!", "Whoosh! Warm hug!", "Hi! Snuggle coat!"],
+        "sweet": ["Hi {{name}}! Warm hug?", "Yay! Cosy time.", "Hello! Let's stay warm.", "I'll keep you cosy."],
+        "brave": ["Coat on! Ready!", "Up! Weather ready!", "Let's go! Stay warm!", "Yes! Outside time!"]
+      },
+      "kid": {
+        "silly": ["Arms in! It's a warm hug, basically.", "Ooh, adventure weather, amigo!", "Hello! Ready to be a cosy burrito?", "Coat time! I've been so bored."],
+        "sweet": ["Hi {{name}}! I'll keep you warm.", "Ready when you are. Cosy time.", "Hello! Let's stay snug out there.", "Good choice. It's chilly."],
+        "brave": ["Coat on! Weather-ready, captain!", "Armour secured. Let's go!", "Up! Nothing gets through me.", "Ready! Wind, rain, whatever."]
+      },
+      "big": {
+        "silly": ["Arms in. It's a warm hug, basically.", "Ooh, adventure weather.", "Hello. Ready to be a cosy burrito?", "Coat time. I've been so bored."],
+        "sweet": ["Hi {{name}}. I'll keep you warm.", "Ready when you are.", "Hello. Let's stay snug out there.", "Good choice. It's chilly."],
+        "brave": ["Coat on. Weather-ready.", "Armour secured. Let's go.", "Up. Nothing gets through me.", "Ready. Wind, rain, whatever."]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": ["Plop! Hook time!", "Boop! Hanging out!", "Wheee! Off we go!", "Oof! Coat nap!"],
+        "sweet": ["Bye, {{name}}. Stay warm.", "I'll wait here.", "See you soon.", "Resting on my hook."],
+        "brave": ["On standby!", "Ready later!", "Holding post!", "Standing by!"]
+      },
+      "kid": {
+        "silly": ["Hung up! Literally hanging out.", "Off duty. My sleeves need a rest.", "Parked on the hook. Very stylish.", "Down I go. Cosy shift complete."],
+        "sweet": ["I'll be on my hook, {{name}}.", "See you when it's chilly.", "Resting up. Stay warm.", "Bye for now, friend."],
+        "brave": ["On standby, captain.", "Off duty. Ready for the next storm.", "Holding position on the hook.", "Mission complete. Resting up."]
+      },
+      "big": {
+        "silly": ["Hung up. Literally hanging out.", "Off duty. My sleeves need a rest.", "Parked on the hook. Very stylish.", "Down I go. Cosy shift complete."],
+        "sweet": ["I'll be on my hook, {{name}}.", "See you when it's chilly.", "Resting up. Stay warm.", "Bye for now."],
+        "brave": ["On standby.", "Off duty. Ready for the next storm.", "Holding position on the hook.", "Mission complete. Resting up."]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": ["Oof! Floppy landing!", "Whoa! Tumble coat!", "Bonk! Soft bump!", "Wheee! Flop!"],
+        "sweet": ["Ouch. I'm okay.", "Oopsie! Still cosy.", "Bump. All fine.", "Ow. Hang me up?"],
+        "brave": ["Bonk! Tough coat!", "Ouch! Still warm!", "Bump! No problem!", "Whoa! I'm fine!"]
+      },
+      "kid": {
+        "silly": ["Oof! I floated down, mostly.", "Whoa! Now I'm a floor coat.", "Ow! My sleeves went everywhere.", "Flop! Not my most elegant moment."],
+        "sweet": ["Oof! I'm okay, {{name}}.", "Ouch. Hang me back up?", "Bump! Still cosy though.", "Whoops. No harm done."],
+        "brave": ["Ouch! Tough coat. Still good.", "Bonk! Barely felt it.", "Whoa! Survived. Hang me up?", "Ow! Nothing a shake won't fix."]
+      },
+      "big": {
+        "silly": ["Oof. I floated down, mostly.", "Whoa. Now I'm a floor coat.", "Ow. My sleeves went everywhere.", "Flop. Not my most elegant moment."],
+        "sweet": ["Oof. I'm okay, {{name}}.", "Ouch. Hang me back up?", "Bump. Still cosy though.", "Whoops. No harm done."],
+        "brave": ["Ouch! Tough coat. Still good.", "Bonk! Barely felt it.", "Whoa. Survived. Hang me up?", "Ow. Nothing a shake won't fix."]
+      }
+    },
+    "shake": {
+      "little": {
+        "silly": ["Wheee! Flappy sleeves!", "Shake! So wiggly!", "Whoa! Wobbly coat!", "Boing! Flap flap!"],
+        "sweet": ["Ooh! That tickles.", "Wobbly! So silly.", "Gentle please!", "Whee. Fun!"],
+        "brave": ["Shake! Still warm!", "Wobble! No fear!", "Whoa! Hold on!", "Shakey! Still strong!"]
+      },
+      "kid": {
+        "silly": ["Whoa! My sleeves are waving at everyone.", "Shake! All the crumbs are escaping.", "Stop! I'm getting dizzy, amigo.", "Flap flap! I'm basically a flag."],
+        "sweet": ["Ooh, that tickles my sleeves!", "Careful, {{name}}. Gentle.", "Wobbly! But fun.", "Whee! Not too hard though."],
+        "brave": ["Shake me! I stay warm!", "Earthquake! Still cosy!", "Whoa! Turbulence! Hold tight!", "Rattle away. I don't mind."]
+      },
+      "big": {
+        "silly": ["Whoa! My sleeves are waving at everyone.", "Shake! All the crumbs are escaping.", "Stop, I'm getting dizzy.", "Flap flap! I'm basically a flag."],
+        "sweet": ["Ooh, that tickles my sleeves.", "Careful, {{name}}. Gentle.", "Wobbly, but fun.", "Whee. Not too hard though."],
+        "brave": ["Shake me. I stay warm.", "Earthquake! Still cosy.", "Whoa! Turbulence. Hold tight.", "Rattle away. I don't mind."]
+      }
+    }
+  }
+}

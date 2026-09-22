@@ -1,0 +1,109 @@
+{
+  "thing": "backpack",
+  "language": "en",
+  "version": 1,
+  "events": {
+    "left_behind": {
+      "little": {
+        "silly": ["Hey! Wait for me!", "Psst! Still here!", "Ooh! You forgot me!", "Hello? Backpack here!"],
+        "sweet": ["Don't forget me, {{name}}.", "I'm still here. Hi!", "Wait for me, friend.", "Still waiting. Hello!"],
+        "brave": ["Wait! Team member here!", "Hey! Don't leave me!", "Still here! Ready!", "Psst! Grab me!"]
+      },
+      "kid": {
+        "silly": ["Psst! You forgot the best one. Me.", "Hello? Am I invisible now?", "Wait! I have all your stuff!", "Going somewhere without me, amigo?"],
+        "sweet": ["Don't forget me, {{name}}!", "Still here whenever you're ready.", "Hey! I'd love to come along.", "Psst. I'm right here."],
+        "brave": ["Wait, captain! Squad member left behind!", "Hey! The mission needs me!", "Don't leave without supplies!", "Still here. Grab me and go!"]
+      },
+      "big": {
+        "silly": ["Psst. You forgot the best one. Me.", "Hello? Am I invisible today?", "Wait! I'm carrying literally everything.", "Going somewhere without me?"],
+        "sweet": ["Don't forget me, {{name}}.", "Still here whenever you're ready.", "Hey! I'd like to come along.", "Psst. Right here."],
+        "brave": ["Wait. You're leaving a squad member.", "Hey! Mission needs supplies.", "Don't head out without me.", "Still here. Grab me and go."]
+      }
+    },
+    "zipped": {
+      "little": {
+        "silly": ["Zzzip! All shut!", "Zip zip! Fun!", "Whee! Closed up!", "Zzzip! Tickles!"],
+        "sweet": ["All zipped. Thank you.", "Safe and closed.", "Zipped up. Nice job.", "Tidy! Thanks, {{name}}."],
+        "brave": ["Zipped! Secure!", "Sealed up! Ready!", "Zzzip! Locked in!", "Closed! Let's go!"]
+      },
+      "kid": {
+        "silly": ["Zzzip! That tickles every time.", "Zipped! Nothing escapes now.", "Zip complete. Very satisfying.", "Zzzip! My favourite sound."],
+        "sweet": ["All zipped up, {{name}}. Thank you.", "Safe and closed. Nice.", "Zipped. Everything's tucked in.", "Tidy! Well done."],
+        "brave": ["Zipped and secure, captain!", "Sealed! Nothing gets out.", "Zzzip! Locked down.", "Closed tight. Ready to move!"]
+      },
+      "big": {
+        "silly": ["Zzzip. That tickles every time.", "Zipped. Nothing escapes now.", "Zip complete. Deeply satisfying.", "Zzzip. My favourite sound."],
+        "sweet": ["All zipped, {{name}}. Thank you.", "Safe and closed. Nice.", "Zipped. Everything's tucked in.", "Tidy. Well done."],
+        "brave": ["Zipped and secure.", "Sealed. Nothing gets out.", "Zzzip. Locked down.", "Closed tight. Let's move."]
+      }
+    },
+    "pickup": {
+      "little": {
+        "silly": ["Whoosh! Up high!", "Boing! Piggyback!", "Wheee! On your back!", "Hi! Let's go!"],
+        "sweet": ["Hi {{name}}! Ready?", "Yay! Off we go.", "Hello! I'm ready.", "Thanks for taking me."],
+        "brave": ["Up! Adventure time!", "Ready! March!", "Whoosh! Let's go!", "Yes! Onward!"]
+      },
+      "kid": {
+        "silly": ["Up we go! Hold on tight, amigo.", "Whoa! Free ride for me.", "Hello! I've got all your stuff.", "Piggyback time! My favourite."],
+        "sweet": ["Hi {{name}}! Let's have a great day.", "There you are. Ready when you are.", "Thanks for taking me along.", "Hello! Off we go together."],
+        "brave": ["Squad's ready! Move out!", "Let's go, captain. Fully loaded!", "Adventure time! Lead the way.", "Onward! I'm carrying everything."]
+      },
+      "big": {
+        "silly": ["Up we go. Hold on tight.", "Whoa. Free ride for me.", "Hello. I've got all your stuff.", "Piggyback time. My favourite."],
+        "sweet": ["Hey {{name}}. Let's have a good day.", "There you are. Ready when you are.", "Thanks for taking me along.", "Hello. Off we go."],
+        "brave": ["Squad ready. Move out.", "Let's go. Fully loaded.", "Adventure time. Lead the way.", "Onward. I've got everything."]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": ["Plop! Heavy me!", "Oof! Down here!", "Boop! Rest time!", "Wheee! Landing!"],
+        "sweet": ["Okay. I'll wait.", "See you soon!", "Resting here. Bye!", "I'll be right here."],
+        "brave": ["Guarding your stuff!", "On duty here!", "Holding position!", "Standing watch!"]
+      },
+      "kid": {
+        "silly": ["Oof! Finally. My shoulders were killing me.", "Down we go. That was a workout.", "Parked! I'll guard everything.", "Phew. Heavy day, amigo."],
+        "sweet": ["I'll wait right here, {{name}}.", "Take your time. I'm comfy.", "Resting. Come back anytime.", "Here whenever you need me."],
+        "brave": ["Guarding the gear, captain!", "On duty. Nothing goes missing.", "Holding position with supplies.", "Standing watch. Go on ahead."]
+      },
+      "big": {
+        "silly": ["Oof. Finally. That was a workout.", "Down we go. My straps need a break.", "Parked. I'll guard everything.", "Phew. Heavy day."],
+        "sweet": ["I'll wait right here, {{name}}.", "Take your time. I'm comfy.", "Resting. Come back anytime.", "Here whenever you need me."],
+        "brave": ["Guarding the gear.", "On duty. Nothing goes missing.", "Holding position.", "Standing watch. Go on."]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": ["Oof! Big bump!", "Whoa! Tumble!", "Bonk! Wobbly!", "Ouch! Rolly!"],
+        "sweet": ["Ouch. I'm okay.", "Oopsie! All fine.", "Bump. Still good.", "Ow. Help me up?"],
+        "brave": ["Bonk! Gear is safe!", "Ouch! Still tough!", "Bump! Nothing lost!", "Whoa! All secure!"]
+      },
+      "kid": {
+        "silly": ["Ouch, my back! And I have no back.", "Whoa! Everything inside just reshuffled.", "Ow! That's going to leave a mark.", "Bonk! My pencils are furious."],
+        "sweet": ["Oof! I'm okay, {{name}}.", "Ouch. Everything's still inside.", "Bump! No harm done.", "Whoops. We're both fine."],
+        "brave": ["Ouch! Gear secure, captain!", "Bonk! Nothing lost. Still tough.", "Whoa! I've survived worse.", "Ow! Shake it off. All secure."]
+      },
+      "big": {
+        "silly": ["Ouch, my back! And I don't have one.", "Whoa! Everything inside just reshuffled.", "Ow. That'll leave a mark.", "Bonk! My pencils are furious."],
+        "sweet": ["Oof. I'm okay, {{name}}.", "Ouch. Everything's still inside.", "Bump. No harm done.", "Whoops. We're both fine."],
+        "brave": ["Ouch! Gear secure.", "Bonk! Nothing lost. Still tough.", "Whoa. I've survived worse.", "Ow. Shake it off. All secure."]
+      }
+    },
+    "good_morning": {
+      "little": {
+        "silly": ["Morning! Backpack ready!", "Wakey wakey! Let's go!", "Hi! School time!", "Boing! Good morning!"],
+        "sweet": ["Good morning, {{name}}.", "Morning, friend!", "Hello! New day.", "Good morning. Ready?"],
+        "brave": ["Morning! Big day!", "Rise up! March!", "Good morning! Ready!", "New day! Adventure!"]
+      },
+      "kid": {
+        "silly": ["Morning! I packed myself. Kidding, you did.", "Good morning! Where are we going today?", "Rise and shine, amigo!", "Morning! My straps are stretched and ready."],
+        "sweet": ["Good morning, {{name}}. Let's have a nice day.", "Morning! Ready for school?", "Hello! Hope today's a good one.", "Good morning, friend."],
+        "brave": ["Morning, captain! Gear check!", "Rise and shine! Mission ahead.", "Good morning! Let's own today.", "New day. Load me up!"]
+      },
+      "big": {
+        "silly": ["Morning. I packed myself. Kidding, you did.", "Good morning. Where are we going today?", "Rise and shine.", "Morning. Straps stretched and ready."],
+        "sweet": ["Good morning, {{name}}. Have a nice day.", "Morning! Ready for the day?", "Hello. Hope today's a good one.", "Good morning."],
+        "brave": ["Morning. Gear check.", "Rise and shine. Mission ahead.", "Good morning. Let's own today.", "New day. Load me up."]
+      }
+    }
+  }
+}

@@ -30,9 +30,7 @@ export function NavBar({ title, backLabel = 'Back', backTo = '/tags', onBack, tr
           </button>
         )}
       </div>
-      <div className={s.title} aria-live="polite">
-        {title}
-      </div>
+      <div className={s.title}>{title}</div>
       <div className={s.trail}>{trailing}</div>
     </nav>
   )

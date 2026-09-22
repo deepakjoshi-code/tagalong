@@ -1,0 +1,9 @@
+# Security headers for static hosts that support this file (Netlify, Cloudflare Pages).
+# frame-ancestors and HSTS must be response headers; they are ignored in a <meta> CSP.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), camera=(), microphone=(self), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin

@@ -35,6 +35,8 @@ export interface ListRowProps {
   onClick?: () => void
   destructive?: boolean
   center?: boolean
+  /** Let a long title wrap instead of truncating (quoted phrases, explanations). */
+  wrap?: boolean
   disabled?: boolean
   'aria-label'?: string
 }
@@ -51,11 +53,12 @@ export function ListRow({
   onClick,
   destructive,
   center,
+  wrap,
   disabled,
   'aria-label': ariaLabel,
 }: ListRowProps) {
   const pressable = !!(to || onClick)
-  const className = [s.row, icon && s.withIcon, destructive && s.destructive, center && s.center]
+  const className = [s.row, icon && s.withIcon, destructive && s.destructive, center && s.center, wrap && s.wrap]
     .filter(Boolean)
     .join(' ')
   const inner = (

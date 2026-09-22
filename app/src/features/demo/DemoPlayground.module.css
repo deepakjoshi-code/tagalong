@@ -1,0 +1,124 @@
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-4);
+  border-radius: var(--r-card);
+  background: linear-gradient(165deg, var(--thing-tint-soft), transparent 80%);
+  text-align: center;
+  min-height: 300px;
+  justify-content: center;
+}
+.bubble {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface);
+  border-radius: var(--r-sheet);
+  box-shadow: var(--shadow-card);
+  font: var(--text-title-3);
+  letter-spacing: var(--tracking-display);
+  max-width: 100%;
+  text-wrap: balance;
+}
+.placeholder {
+  font: var(--text-callout);
+  color: var(--text-2);
+  font-weight: 400;
+}
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--space-2);
+}
+.control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-4) var(--space-2);
+  background: var(--surface);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  font: var(--text-footnote);
+  font-weight: 600;
+  color: var(--text);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.control:active {
+  transform: scale(0.95);
+}
+.controlIcon {
+  color: var(--accent);
+}
+.pickers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.pickerLabel {
+  font: var(--text-footnote);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+  padding-left: var(--space-1);
+  margin-bottom: var(--space-2);
+  display: block;
+}
+.thingRow {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+}
+.thingRow::-webkit-scrollbar {
+  display: none;
+}
+.thingPick {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-radius: var(--r-card);
+  border: 2px solid transparent;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.thingPick[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+.logRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font: var(--text-subhead);
+}
+.logDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.logText {
+  flex: 1;
+}
+.logTime {
+  font: var(--text-footnote);
+  color: var(--text-2);
+}
+.empty {
+  font: var(--text-subhead);
+  color: var(--text-2);
+  text-align: center;
+  padding: var(--space-4);
+}

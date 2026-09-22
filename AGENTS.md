@@ -11,7 +11,7 @@ Source of truth: `docs/00-product-brief.md`, then `docs/design/design-spec.md`, 
 - Web Bluetooth only on a user gesture; never auto‑reconnect without the user having paired in‑app.
 
 ## Child safety (content)
-- Lines must pass `docs/content/content-guidelines.md`: encouraging, no shame/fear/food‑body talk, no brands, age‑appropriate vocabulary and length.
+- Lines must pass `content/guidelines.md`: encouraging, no shame/fear/food‑body talk, no brands, age‑appropriate vocabulary and length.
 
 ## Code
 - TypeScript strict, no `any`, zod at boundaries. No new dependency without a one‑line justification in the PR/commit.

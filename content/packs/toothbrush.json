@@ -1,0 +1,441 @@
+{
+  "thing": "toothbrush",
+  "language": "en",
+  "version": 1,
+  "events": {
+    "brush_start": {
+      "little": {
+        "silly": [
+          "Swish swish! Bubbles!",
+          "Wheee! Brushy time!",
+          "Scrub scrub! Fun!",
+          "Foamy foamy! Go!"
+        ],
+        "sweet": [
+          "Brush time, {{name}}!",
+          "Yay! Let's brush.",
+          "Here we go. Nice.",
+          "Brushy brushy. Good."
+        ],
+        "brave": [
+          "Brush power! Go!",
+          "Scrub squad! Ready!",
+          "Swish! Be strong!",
+          "Let's go! Brush time!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Swish swish! Bubble party starting!",
+          "Here we go! Foam mode activated.",
+          "Scrub a dub, amigo!",
+          "Let's make some serious bubbles."
+        ],
+        "sweet": [
+          "Brush time, {{name}}. Let's do this together.",
+          "Here we go. Nice and gentle.",
+          "Two minutes with me. Easy.",
+          "Let's get those teeth sparkling."
+        ],
+        "brave": [
+          "Brush mission, go! Two minutes!",
+          "Scrub squad, assemble!",
+          "Let's do this, captain!",
+          "Bubble battle begins now!"
+        ]
+      },
+      "big": {
+        "silly": [
+          "Swish swish! Bubble party, population: us.",
+          "Here we go. Foam mode activated.",
+          "Two minutes. I'll wait. I always wait.",
+          "Let's make some serious bubbles."
+        ],
+        "sweet": [
+          "Brush time, {{name}}. Let's do this.",
+          "Here we go. Nice and steady.",
+          "Two minutes. Easy enough.",
+          "Let's get those sparkling."
+        ],
+        "brave": [
+          "Brush mission, go. Two minutes.",
+          "Scrub squad, assemble.",
+          "Let's do this, captain.",
+          "Two minutes. Own them."
+        ]
+      }
+    },
+    "brush_done": {
+      "little": {
+        "silly": [
+          "Ta-da! Sparkly teeth!",
+          "Wheee! All done!",
+          "Shiny shiny! Yay!",
+          "Bubbles gone! Hooray!"
+        ],
+        "sweet": [
+          "All done, {{name}}. Lovely.",
+          "So sparkly! Well done.",
+          "Finished! Good job.",
+          "Yay! Shiny and clean."
+        ],
+        "brave": [
+          "Mission done! Champion!",
+          "All clean! Strong teeth!",
+          "Victory! Clean teeth!",
+          "Done! You are brave!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Ta-da! Your teeth are blinding me.",
+          "Two whole minutes! You legend.",
+          "All done! I'm exhausted, amigo.",
+          "Sparkle level: dangerously high."
+        ],
+        "sweet": [
+          "All done, {{name}}. That was great.",
+          "Two minutes! I'm proud of you.",
+          "Finished. Lovely and clean.",
+          "Well done. Same time tomorrow?"
+        ],
+        "brave": [
+          "Mission complete, captain! Full two minutes!",
+          "All clean! That's champion work.",
+          "Victory! Teeth secured.",
+          "Done! You crushed it."
+        ]
+      },
+      "big": {
+        "silly": [
+          "Ta-da! Your teeth are blinding me.",
+          "Two whole minutes. You legend.",
+          "All done. I'm exhausted.",
+          "Sparkle level: dangerously high."
+        ],
+        "sweet": [
+          "All done, {{name}}. That was great.",
+          "Two full minutes. Nicely done.",
+          "Finished. Lovely and clean.",
+          "Well done. Same time tomorrow?"
+        ],
+        "brave": [
+          "Mission complete. Full two minutes.",
+          "All clean. That's champion work.",
+          "Victory. Teeth secured.",
+          "Done. You crushed it."
+        ]
+      }
+    },
+    "brush_short": {
+      "little": {
+        "silly": [
+          "Ooh! More bubbles please!",
+          "Wait! Not finished!",
+          "More swishing? Yay!",
+          "Bubbles miss you!"
+        ],
+        "sweet": [
+          "A little more, {{name}}?",
+          "Nearly there. Keep going?",
+          "Just a bit longer.",
+          "Almost done. One more?"
+        ],
+        "brave": [
+          "Keep going! Almost!",
+          "More scrubbing! You can!",
+          "Nearly there! Brave!",
+          "A bit more! Go!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Hey! The back teeth are feeling left out.",
+          "That was quick! Even for you, amigo.",
+          "More bubbles! They miss you already.",
+          "Wait, wait! I wasn't finished dancing."
+        ],
+        "sweet": [
+          "A little longer, {{name}}? You're nearly there.",
+          "Almost done. Just a bit more.",
+          "Keep going. You've got this.",
+          "Nearly there. One more round?"
+        ],
+        "brave": [
+          "Keep going, captain! Almost there!",
+          "Don't stop now! Finish strong!",
+          "A bit more scrubbing. You've got this!",
+          "Nearly there. Push through!"
+        ]
+      },
+      "big": {
+        "silly": [
+          "Hey, the back teeth feel left out.",
+          "That was quick. Even for you.",
+          "More bubbles. They miss you already.",
+          "Wait! I wasn't finished dancing."
+        ],
+        "sweet": [
+          "A little longer, {{name}}? Nearly there.",
+          "Almost done. Just a bit more.",
+          "Keep going. You've got this.",
+          "Nearly there. One more round?"
+        ],
+        "brave": [
+          "Keep going. Almost there.",
+          "Don't stop now. Finish strong.",
+          "A bit more. You've got this.",
+          "Nearly there. Push through."
+        ]
+      }
+    },
+    "pickup": {
+      "little": {
+        "silly": [
+          "Boing! Brushy here!",
+          "Wheee! Hello!",
+          "Hi! Bubble time?",
+          "Whoosh! Ready!"
+        ],
+        "sweet": [
+          "Hi {{name}}! Hello.",
+          "Yay! You're here.",
+          "Hello, friend.",
+          "Hi! Ready to help."
+        ],
+        "brave": [
+          "Ready! Let's brush!",
+          "Up! Scrub time!",
+          "Here! On duty!",
+          "Yes! Let's go!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Hello! I've been standing here all day.",
+          "Ooh, it's brushing o'clock!",
+          "Hi, amigo! Bubbles await.",
+          "You rang? Bubbles ready."
+        ],
+        "sweet": [
+          "Hi {{name}}! Good to see you.",
+          "Hello! Ready when you are.",
+          "There you are. Let's do this.",
+          "Hi! I'm happy to help."
+        ],
+        "brave": [
+          "Ready for duty, captain!",
+          "Standing by. Let's brush!",
+          "Reporting in. Bubbles loaded!",
+          "On duty. Say the word!"
+        ]
+      },
+      "big": {
+        "silly": [
+          "Hello. I've been standing here all day.",
+          "Ooh, it's brushing o'clock.",
+          "Hi. Bubbles await.",
+          "You rang? Bubbles ready."
+        ],
+        "sweet": [
+          "Hi {{name}}. Good to see you.",
+          "Hello. Ready when you are.",
+          "There you are. Let's do this.",
+          "Hi. Happy to help."
+        ],
+        "brave": [
+          "Ready for duty.",
+          "Standing by. Let's brush.",
+          "Reporting in. Bubbles loaded.",
+          "On duty. Say the word."
+        ]
+      }
+    },
+    "putdown": {
+      "little": {
+        "silly": [
+          "Plop! Back home!",
+          "Boop! Nap time!",
+          "Wheee! Resting!",
+          "Bye bye! Zzz!"
+        ],
+        "sweet": [
+          "Bye, {{name}}. See you.",
+          "Resting now. Bye!",
+          "I'll wait here.",
+          "Night night. Bye!"
+        ],
+        "brave": [
+          "On standby!",
+          "Holding post!",
+          "Ready later!",
+          "Waiting here!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Back to my stand. Riveting.",
+          "Okay, drying off. See you tonight.",
+          "Parked! I'll dream of bubbles.",
+          "Bye, amigo. Same time tomorrow?"
+        ],
+        "sweet": [
+          "See you later, {{name}}.",
+          "I'll be right here. Bye!",
+          "Resting up. See you tonight.",
+          "Bye for now. Nice work."
+        ],
+        "brave": [
+          "On standby, captain.",
+          "Holding my post. Ready later.",
+          "Standing by for the next round.",
+          "Waiting here. Call me anytime."
+        ]
+      },
+      "big": {
+        "silly": [
+          "Back to my stand. Riveting.",
+          "Okay, drying off. See you tonight.",
+          "Parked. I'll dream of bubbles.",
+          "Bye. Same time tomorrow?"
+        ],
+        "sweet": [
+          "See you later, {{name}}.",
+          "I'll be right here.",
+          "Resting up. See you tonight.",
+          "Bye for now. Nice work."
+        ],
+        "brave": [
+          "On standby.",
+          "Holding my post. Ready later.",
+          "Standing by for round two.",
+          "Waiting here. Call me anytime."
+        ]
+      }
+    },
+    "drop": {
+      "little": {
+        "silly": [
+          "Whoa! Tumble!",
+          "Oof! Floor!",
+          "Bonk! Wobbly!",
+          "Ouch! Bouncy!"
+        ],
+        "sweet": [
+          "Ouch. Rinse me?",
+          "Oopsie! I'm okay.",
+          "Bump. Wash me please?",
+          "Ow. Help me up?"
+        ],
+        "brave": [
+          "Bonk! Still tough!",
+          "Ouch! I'm fine!",
+          "Bump! No problem!",
+          "Whoa! Still strong!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Ouch! Give me a rinse, amigo.",
+          "Whoa! The floor and I have met.",
+          "Ow! I need a quick wash now.",
+          "Bonk! Five second rule? Let's rinse anyway."
+        ],
+        "sweet": [
+          "Oof! A quick rinse, {{name}}?",
+          "Ouch. I'm okay, just dusty.",
+          "Bump! Could you rinse me?",
+          "Whoops. Rinse and we're good."
+        ],
+        "brave": [
+          "Ouch! Tough brush. Just rinse me.",
+          "Bonk! Still standing. Quick wash?",
+          "Whoa! Survived. Rinse required.",
+          "Ow! Fine. Give me a rinse."
+        ]
+      },
+      "big": {
+        "silly": [
+          "Ouch! Give me a rinse, please.",
+          "Whoa. The floor and I have met.",
+          "Ow. I need a quick wash now.",
+          "Bonk! Five second rule? Rinse anyway."
+        ],
+        "sweet": [
+          "Oof. A quick rinse, {{name}}?",
+          "Ouch. I'm okay, just dusty.",
+          "Bump. Could you rinse me?",
+          "Whoops. Rinse and we're good."
+        ],
+        "brave": [
+          "Ouch! Tough brush. Just rinse me.",
+          "Bonk! Still standing. Quick wash?",
+          "Whoa. Survived. Rinse required.",
+          "Ow. Fine. Give me a rinse."
+        ]
+      }
+    },
+    "good_morning": {
+      "little": {
+        "silly": [
+          "Morning! Bubble time!",
+          "Wakey wakey! Swish!",
+          "Hi! Brushy brushy!",
+          "Boing! Good morning!"
+        ],
+        "sweet": [
+          "Good morning, {{name}}.",
+          "Morning! Brush time?",
+          "Hello! New day.",
+          "Good morning, friend."
+        ],
+        "brave": [
+          "Morning! Brush mission!",
+          "Rise up! Scrub time!",
+          "Good morning! Ready!",
+          "New day! Let's go!"
+        ]
+      },
+      "kid": {
+        "silly": [
+          "Morning! Your teeth called. They want bubbles.",
+          "Good morning! Two minutes, then freedom.",
+          "Rise and shine, amigo! Foam awaits.",
+          "Morning! I've been minty all night."
+        ],
+        "sweet": [
+          "Good morning, {{name}}. Ready to brush?",
+          "Morning! Let's start the day right.",
+          "Hello! Two minutes together?",
+          "Good morning, friend."
+        ],
+        "brave": [
+          "Morning, captain! Brush mission awaits!",
+          "Rise and shine! Two minutes, go!",
+          "Good morning! Let's win the day.",
+          "New day. Teeth first!"
+        ]
+      },
+      "big": {
+        "silly": [
+          "Morning. Your teeth called. They want bubbles.",
+          "Good morning. Two minutes, then freedom.",
+          "Rise and shine. Foam awaits.",
+          "Morning. I've been minty all night."
+        ],
+        "sweet": [
+          "Good morning, {{name}}. Ready to brush?",
+          "Morning. Let's start the day right.",
+          "Hello. Two minutes together?",
+          "Good morning."
+        ],
+        "brave": [
+          "Morning. Brush mission awaits.",
+          "Rise and shine. Two minutes, go.",
+          "Good morning. Let's win the day.",
+          "New day. Teeth first."
+        ]
+      }
+    }
+  }
+}
