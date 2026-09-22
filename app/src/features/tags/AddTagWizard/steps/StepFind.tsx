@@ -52,7 +52,7 @@ export function StepFind({ draft, patch, next }: StepProps) {
 
       <div className={s.center}>
         <div className={s.pulse}>
-          <img className={s.tagArt} src="/icons/icon.svg" alt="" width={112} height={112} />
+          <img className={s.tagArt} src={`${import.meta.env.BASE_URL}icons/icon.svg`} alt="" width={112} height={112} />
         </div>
       </div>
 

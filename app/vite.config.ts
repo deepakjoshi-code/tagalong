@@ -4,14 +4,18 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
 // Tagalong is a static, local-only PWA. No runtime network requests are made by the app itself.
+// TAGALONG_BASE lets CI build for a sub-path (GitHub Pages) without changing code.
+const base = process.env.TAGALONG_BASE ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.svg', 'icons/*.png'],
       manifest: {
-        id: '/',
+        id: base,
         name: 'Tagalong',
         short_name: 'Tagalong',
         description: 'Give anything a voice. Set up your Tagalong tags — privately, on your phone.',
@@ -19,8 +23,8 @@ export default defineConfig({
         background_color: '#F6F5F2',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         categories: ['kids', 'lifestyle', 'utilities'],
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -30,7 +34,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
-        navigateFallback: '/index.html',
+        navigateFallback: `${base}index.html`,
         cleanupOutdatedCaches: true,
       },
       devOptions: { enabled: false },

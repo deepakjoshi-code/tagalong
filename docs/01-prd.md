@@ -277,75 +277,79 @@ Duplicate nicknames within one kid are allowed and not de‑duplicated; the wiza
 
 | ID | Given / When / Then |
 |---|---|
-| AT‑5.1 | Then a volume slider 0–100 in steps of 5 (default 60) with labels "Silent (light only)" at 0 and "Max" at 100; releasing the thumb previews a short line on the tag when connected (phone otherwise). |
-| AT‑5.2 | Then Quiet hours toggle default **on**, 20:00–07:00, with two time pickers in 10‑minute steps (protocol encoding), 12/24 h per device locale; ranges may cross midnight; helper "Silent between these times. A tap still lights up." |
-| AT‑5.3 | Then **Gentle nudges** toggle default **off** with helper "Lets the tag speak up on its own — a good morning, or 'don't forget me' when it's been left still. Off by default." |
-| AT‑5.4 | Given the parent sets start = end, Then the app treats quiet hours as disabled and says so. |
+| AT‑5.1 | Then a volume slider 0–100, step 1, **default 70**, labelled "Quiet" ↔ "Lively", with the footer "Hard‑capped in the tag at 75 decibels, well under the toy safety limit." Step copy: "The tag never goes above a gentle indoor volume, whatever you choose here." Previewing a line on release is **P1** (it exists on the detail screen, where the tag is reachable). |
+| AT‑5.2 | Then Quiet hours default **on**, 20:00–07:00, with two native time inputs (12/24 h per device locale) and the range shown in words. Ranges may cross midnight. The wire format is 10‑minute units, so a time is rounded to the nearest 10 minutes when it is written (TAG‑QH‑01); the UI accepts any minute. Footer: "During quiet hours the tag stays silent but still remembers what happened." |
+| AT‑5.3 | Then **Gentle nudges** default **off**: "Never nagging, never more than once an hour", with the footer "Off by default. When on, the tag may offer one gentle reminder, like asking for a refill." |
+| AT‑5.4 | Given the parent sets start = end, Then quiet hours are treated as disabled (`isWithinQuietHours` returns false and the config encodes 255/255). Saying so in the UI is **P1**. |
+| AT‑5.5 | The primary button reads **Send to tag** — the parent knows the next tap talks to hardware. |
 
 **Step 6 — Sending to tag…**
 
 | ID | Given / When / Then |
 |---|---|
-| AT‑6.1 | When step 6 opens, Then the app (re)connects if needed, writes `TagConfig` (version 1, band, thing, personality, volume, quiet, language 0, flags: nudges, eventBuffer=1, nameClipPresent=0, led=1; maxPerHour 12; timeOfDayMin) then reads it back and compares; progress shows three labelled stages: Connecting · Sending · Checking. |
-| AT‑6.2 | Given the read‑back matches, Then the tag speaks one configured line (outside quiet hours) and the app shows confetti (skipped under reduced motion), "Bottle Buddy is ready!", three example lines with ▶, and **Done**; Tag, Kid (if new) and a synthetic first event are persisted **only now**. |
-| AT‑6.3 | Given the write is rejected (0x80) or the read‑back differs, Then retry once automatically, then show "Couldn't reach the tag. Hold its button and try again." with **Retry** and **Save for later** (saves the tag as "Not sent yet"; Home card shows a **Finish setup** button). |
-| AT‑6.4 | Given demo mode, Then stages animate for ≈ 1.2 s and the phone speaks the first line. |
-| AT‑6.5 | When **Done** is tapped, Then Home opens with the new card at the top and a success haptic. |
+| AT‑6.1 | When step 6 opens, Then the Kid (if new) and the Tag are persisted first — so a family's work is never lost to a radio failure — and the app then connects and writes `TagConfig` (version 1, band, thing, personality, volume, quiet, language 0, flags: nudges, eventBuffer = 1, nameClipPresent = from the kid's clip, led = 1; maxPerHour 12; timeOfDayMin = now). A labelled spinner reads "Sending to {nickname}…". |
+| AT‑6.2 | Given the write succeeds, Then `lastSyncAt` is stamped, a success haptic fires, confetti plays (skipped under reduced motion), and the screen reads "{nickname} is ready! · Tuned for ages 5–7. Give it a shake and see what happens." with three example lines. |
+| AT‑6.3 | Given the write fails for any reason, Then the screen reads "{nickname} is saved" with the plain‑language transport error (X‑06) or "We couldn't reach the tag, but your settings are saved and will sync next time.", plus **Try sending again**. The tag stays in the list and re‑syncs from the detail screen. Reading the config back and comparing it, and one automatic retry, are **P1** (§13 A‑16). |
+| AT‑6.4 | Given a simulated tag, Then the write round‑trips through the in‑memory device and the final button reads **Try it in the playground** (routing to `/demo`), with **Go to my tags** underneath. |
+| AT‑6.5 | When **Done** is tapped on a real tag, Then its detail screen opens. Marking the card "Not sent yet" with a **Finish setup** action on Home (E‑07) is **P1**. |
+| AT‑6.6 | Given the write succeeded, Then the tag speaks one configured line outside quiet hours, so setup ends on the real voice. **(gap, P0 for hardware launch — same dependency as AT‑4.4.)** |
 
 ### 5.4 Tag detail (`/tags/:id`)
 
 | ID | Given / When / Then |
 |---|---|
-| TD‑01 | Then the hero shows the thing‑tinted gradient, ThingIcon 120 with Face, nickname (tap to rename inline), "Kid · Age band", connection state, and **Connect** when disconnected. |
-| TD‑02 | **Personality** section: row with personality chip → Sheet with the three cards (as AT‑4); **Attached to** row → thing grid (E‑03 flow); **For** row → kid picker. Changing any writes config immediately when connected, else queues "Not sent yet" and shows a pending chip. **Says things like…** shows 3 lines with ▶ (phone + tag when connected, outside quiet hours) and a shuffle button. |
-| TD‑03 | **Sound** section: volume slider (as AT‑5.1), quiet hours row (as AT‑5.2), nudges toggle, **Mute for an hour** (sends `03 3C 00`; becomes **Unmute** with remaining time; `03 00 00` on unmute). Mute state reflects `Info.flags.muted` when connected. |
-| TD‑04 | Given quiet hours are active now, When ▶ or **Identify** is tapped, Then a confirm sheet "It's quiet hours — play anyway?" precedes the control op (control ops bypass quiet hours on the tag, TAG‑QH‑04). |
-| TD‑05 | **Today** section: mini timeline grouped by day (Today, Yesterday, weekdays) of the last 7 days, kid words + time, drop shows impact chip ("a big one" ≥ 6 g / "a little one"); **Clear** wipes this tag's events after confirm. Empty state: "Nothing yet — Bottle Buddy will remember what happens when it's near your phone." |
-| TD‑06 | **Tag** section: battery (percent, last read time), firmware `x.y.z`, content pack `name vX`, **Identify** (`01`), **Update** (opens firmware DFU flow when a newer signed image is bundled with the app; else "Up to date"). Hardware revision in a footnote. |
-| TD‑07 | **Forget this tag** (destructive): confirm Sheet with the consequences (§4.6); on confirm: send `05 A5` if connected (or show the 10‑s reset instruction), delete tag + its events, keep the kid, return Home with toast "Bottle Buddy forgotten." |
-| TD‑08 | Given the tag is "Not sent yet", Then a banner at the top offers **Send settings now**. |
+| TD‑01 | Then a NavBar titled with the nickname sits over a thing‑tinted hero: ThingIcon 132 with Face (sleepy while muted), the nickname as the page heading, and chips for kid name (or band label), age range, thing label and battery. Inline rename, an explicit connection state and a **Connect** button are **P1** (see H‑05 — the same gap). |
+| TD‑02 | **Personality** section: one row showing the current personality and its blurb → Sheet listing the three personalities with a ✓ on the current one. Choosing one updates the tag, re‑rolls the sample lines and writes the config immediately. **Says things like…** lists three pack lines for the thing's headline event with a **Show me others** shuffle row; tapping a line speaks it on the phone. Footer: "Tap a line to hear roughly how it sounds on this phone." |
+| TD‑02a | **Attached to** and **For** rows (thing grid and kid picker, E‑01/E‑03) are **P1, and the highest‑value P1 on this screen**: without them a tag cannot follow a bottle to a new bottle, or a bottle to a younger sibling, without being forgotten and set up again (§13 A‑04). |
+| TD‑03 | **Sound** section: volume slider (0–100, step 1) writing on release, quiet hours toggle with Starts/Ends time rows that write on blur, gentle nudges toggle, and **Mute for an hour** / **Unmute** (writes `mutedUntil` locally; toast "{nickname} is quiet for an hour"). Sending `03 3C 00` / `03 00 00` with the mute, showing the remaining time, and reconciling with `Info.flags.muted` on connect are **P1** (TAG‑MU‑04). Footer: "Volume is hard‑capped in the tag at a gentle indoor level." |
+| TD‑04 | Given quiet hours are active now, When a preview or **Make it giggle** is tapped, Then a confirm sheet "It's quiet hours — play anyway?" precedes the control op (control ops bypass quiet hours on the tag, TAG‑QH‑04). **(gap, P1 — today Identify always plays. A tag that giggles at 11 pm in a shared bedroom is a returned tag.)** |
+| TD‑05 | **Recent activity** section: the last 12 events, newest first, as kid words plus a locale clock time, with **Clear activity** underneath. Footer: "Kept on this phone for 7 days, then deleted automatically." Empty state: "Nothing yet. Give it a shake." Day grouping (Today / Yesterday / weekday) and a drop‑impact chip ("a big one" ≥ 6 g) are **P2**; a confirm step before Clear is **P1**. |
+| TD‑06 | **Tag** section: Battery (percent or "Unknown"), Firmware `x.y.z`, Content pack `vX`, **Make it giggle** ("Finds the tag by sound and light", sends `01`, toast "Listen for a giggle"), **Send settings again** (re‑writes the config). All actions disable while one is in flight. A last‑read timestamp, the pack name, the hardware revision and an **Update** row for signed firmware DFU are **P0 for hardware launch** (DFU is the only field‑fix path — roadmap §1.2). |
+| TD‑07 | **Forget this tag** (destructive): confirm Sheet — "Its settings and activity are deleted from this phone. The tag keeps working until you pair it again." — then disconnect, delete the tag and its events, keep the kid, return to Home with toast "{nickname} forgotten." Sending `05 A5` when connected, and showing the charger + 10 s instruction when not, are **P0 for hardware launch**: without a reset the tag stays bonded to this phone and cannot be paired again (E‑04, §4.6). Until then the sheet copy above is deliberately accurate rather than aspirational. |
+| TD‑08 | Given the tag is "Not sent yet", Then a banner at the top offers **Send settings now**. **(gap, P1 — **Send settings again** covers it, less legibly.)** |
 
 ### 5.5 Kids (`/kids`, `/kids/new`, `/kids/:id`)
 
 | ID | Given / When / Then |
 |---|---|
-| K‑01 | List shows Avatar (initial or band glyph), name or band label, band, "N tags". Empty state: "Add a kid when you add a tag" with **Add a tag**. |
-| K‑02 | `/kids/new` reuses the AT‑2.2 form; saving returns to the list. |
-| K‑03 | Detail: name (inline edit), age band (segmented; changing re‑sends config to all this kid's tags with a note "Updates N tags"), tags list (tap → detail). |
-| K‑04 | **Name clip**: **Record** (≤ 1.5 s, auto‑stops; mic permission requested inside the tap; red recording indicator; the raw stream is closed immediately after; stored as 16 kHz mono PCM WAV in IndexedDB), ▶ play, **Delete**. Explainer: "Stored only on this phone and, after the 1.1 update, on your tags. Never anywhere else." In v1.0 the clip is not transferred to the tag (§13, A‑02). |
-| K‑05 | **Delete kid** (destructive): if the kid has tags, the sheet requires choosing **Move tags to…** (another kid) or **Forget their tags too**; deleting removes name, band and clip blob. |
+| K‑01 | List shows Avatar (initial, or "?" with no name), name or "{Band} kid", subtitle "{Band} · {range} · N tags", and a `+` to add. Footer: "Names and recordings are stored only on this phone. Delete them anytime." Empty state: "No kids yet · Add a kid so tags can match their age. A name is optional and never leaves this phone." |
+| K‑02 | `/kids/new` shows the same fields as AT‑2.2 (name, band cards) with **Add kid**; saving returns to the list. |
+| K‑03 | `/kids/:id`: Avatar, name field, age‑band cards, **Save**. Re‑sending the config to all of this kid's tags on a band change, with a note "Updates N tags", is **P0 for hardware launch**: the band lives in `TagConfig`, so until this runs a tag keeps speaking to a child who has outgrown it (§13 A‑17). A tags list on this screen is **P2**. |
+| K‑04 | **Name recording** (existing kids only): **Record the name** ("Say it once, clearly. Up to 1.5 seconds.") requests mic permission inside the tap, records for at most 1,500 ms with `MediaRecorder`, auto‑stops, closes every track immediately, and stores the blob in IndexedDB under `clip:<kidId>`; then **Play** and **Delete**. Encoding is whatever the browser supports (Opus in WebM, or MP4); re‑encoding to 16 kHz ADPCM happens when the transfer path ships. Footer: "Optional. Record the name once and tags can say it. Stored on this phone and on your tags only, never uploaded." Given the browser cannot record, Then the row reads "Recording not available". In v1.0 the clip is **not** transferred to the tag (§13 A‑02) — the footer must be corrected to say "on this phone, and on your tags after the 1.1 update" before launch. **(copy gap, P0 — it currently over‑promises.)** |
+| K‑05 | **Delete this kid** (destructive): the sheet states the consequence — "This also removes N tags and their activity from this phone." — and deleting removes the kid, their tags, those tags' events and the clip blob. A **Move tags to…** choice is **P1** (E‑01): hand‑me‑downs between siblings are common, and today they cost a re‑pair. |
 
 ### 5.6 Settings (`/settings`, `/settings/about`)
 
 | ID | Given / When / Then |
 |---|---|
-| S‑01 | **App** group: Appearance segmented (System/Light/Dark, applies instantly), Haptics toggle, **Install app** row (visible only when installable) or "Installed ✓". |
-| S‑02 | **Privacy** row → `/settings/privacy`. |
-| S‑03 | **Demo mode** toggle: turning on shows a one‑line explainer and adds a simulated tag if none exists; turning off removes simulated tags and their events after confirm. |
-| S‑04 | **About**: version + build hash, "Open source licences" (bundled text), "Welcome tour", "Privacy notice" (bundled, plain language), hardware safety information. No external links in v1.0 except a copy‑to‑clipboard support email. |
-| S‑05 | **Delete everything** (destructive, at the bottom): typed confirmation "DELETE" → `store.wipeAll()` clears IndexedDB, blobs, settings, unregisters nothing remote (none exists) → returns to Welcome. Tags are **not** reset remotely (they are no longer known); the sheet says how to reset each tag by hand. |
+| S‑01 | **App** group: Appearance segmented (Auto / Light / Dark, applies instantly), Haptics toggle, and **Add to home screen** — tappable when `beforeinstallprompt` has fired, otherwise "Use your browser's Share menu"; the row is hidden once the app runs standalone. |
+| S‑02 | **Privacy** group: **Privacy Center** row ("See and delete everything Tagalong knows") → `/settings/privacy`, plus **Keep an activity log** ("7 days, on this phone only"). Turning the log off stops every new event being recorded; it does not delete existing entries, so it is paired with **Clear activity** in the Privacy Center. Group footer: "No account. No cloud. No analytics. Everything lives on this phone." |
+| S‑03 | **Demo mode** group: toggle plus **Open the playground**. Footer: "Demo mode creates pretend tags so you can try everything without hardware. Turn it off to pair a real tag." Turning it on does not create a tag (the wizard does); turning it off leaves existing simulated tags in the list, which keep working in the playground and are labelled as demo tags (E‑16). Offering to remove them on toggle‑off is **P2**. |
+| S‑04 | **About** (`/settings/about`): version, loaded content packs, "Works offline: Yes", "Servers used: None", a "How it works" group (Connection: Bluetooth · Storage: This device · Microphone on the tag: None) with the plain‑language footer, and an open‑source credit with the footer naming the bundled licences. Build hash, a full bundled privacy notice, the hardware safety information, the welcome tour and a copy‑to‑clipboard support address are **P0 for launch** (compliance and support both depend on them — packaging doc §7 points the leaflet at this screen). No external links in v1.0. |
+| S‑05 | **Delete everything** (destructive, at the bottom): sheet — "Kids, tags, recordings and activity are permanently removed from this phone. Type DELETE to confirm." — with the button disabled until the word matches (case‑insensitive). On confirm: disconnect every tag, delete every clip blob, `store.wipeAll()` clears IndexedDB and settings, toast "Everything deleted from this phone". Tags are **not** reset remotely (they are no longer known); the sheet must add how to reset each tag by hand before hardware launch. **(copy gap, P0 — same dependency as TD‑07.)** |
 
 ### 5.7 Privacy Center (`/settings/privacy`)
 
 | ID | Given / When / Then |
 |---|---|
-| PC‑01 | Card "What Tagalong knows" is a live inventory: N kids (names: yes/no), N tags, N events in the last 7 days, name clips: yes/no, storage size, "All stored on this phone." Updates instantly on changes. |
-| PC‑02 | **Export my data** → JSON file `tagalong-export-YYYYMMDD.json` (schema‑versioned; clips base64) via download/share sheet; nothing leaves the device except through the OS share the parent chooses. |
-| PC‑03 | **Clear activity** → deletes all events after confirm. |
-| PC‑04 | **Delete everything** → same as S‑05. |
-| PC‑05 | Footer: "No servers. No accounts. No analytics. We literally can't see your data." plus the durability note (X‑03) and the OS‑voice note (X‑07) when applicable. |
-| PC‑06 | (P2 · v1.1) **Restore from export** — imports a JSON export on a new phone (schema‑validated; tags still need re‑pairing). |
+| PC‑01 | Card "What Tagalong knows" states the principle — "All of it lives on this phone. There is no Tagalong account and no Tagalong server, so none of this has ever been sent anywhere." — above a live **On this phone** inventory: Kids, Names saved, Name recordings, Tags, Activity entries (with "(last 7 days)"). It updates instantly as data changes. A storage‑size figure is **P2**. |
+| PC‑02 | A **Never collected** group names the absences as explicitly as the presences: Location · Never, Audio or video · Never, Analytics or crash reports · Never, Third‑party services · None, with the footer "Tags have no microphone, no camera and no location hardware. They cannot be used to find a child." This is the screen a sceptical parent screenshots, and the sentence that keeps us out of the tracker‑misuse conversation (ADR‑007, market research §7). |
+| PC‑03 | **Export my data** → `tagalong-data.json` (`{app, format: 1, exportedAt, note, data: {kids, tags, events, settings}}`) via the browser download; the file says in its own `note` field that audio recordings are not included, and the group footer repeats it. Nothing leaves the device except through the OS share the parent chooses. Including clips (base64) and a date‑stamped filename are **P1** — without clips an export is not a complete backup, which matters for E‑04. |
+| PC‑04 | **Clear activity** → deletes every event immediately, toast "Activity cleared". A confirm step is **P1** (it is destructive and one tap away). |
+| PC‑05 | **Delete everything** → same sheet and effect as S‑05. |
+| PC‑06 | Footer: "No servers. No accounts. No analytics. We literally can't see your data." The durability note (X‑03) and the OS‑voice note (X‑07) are **P1** additions. |
+| PC‑07 | (P2 · v1.1) **Restore from export** — imports a JSON export on a new phone (schema‑validated; tags still need re‑pairing). |
 
 ### 5.8 Demo playground (`/demo`)
 
 | ID | Given / When / Then |
 |---|---|
-| D‑01 | Top: three selectors — Age band (segmented), Thing (horizontal chip scroller), Personality (segmented). Changing any updates the hero and the log header immediately. |
-| D‑02 | Hero: ThingIcon 120 with Face, tinted gradient; buttons appropriate to the thing: common **Pick up · Drop · Shake · Tap · Put down**, plus bottle **Fill · Sip · Empty**, lunchbox **Open · Close · Pack**, backpack **Zip · Left behind**, toothbrush **Start brushing · Done (2 min) · Short brush**. |
-| D‑03 | When a button is tapped, Then the simulated transport emits an `EventFrame`, the phone speaks the picked line (caption shown), the Face reacts (surprised on drop, happy on pickup, sleepy on long still), and the event appears at the top of the in‑screen log with kid words. |
-| D‑04 | Then the playground honours quiet hours/mute of the simulated tag only if the parent toggles "Simulate quiet hours" in a small footer; default off so demos always speak. |
-| D‑05 | Then the screen is presentation‑grade: no dev labels; works offline; landscape tablet layout puts controls beside the hero. |
-| D‑06 | Given demo mode is off, Then `/demo` still works (it never touches real tags) and offers **Add a real tag**. |
+| D‑01 | Below the stage: **Attached to** (a row of all nine ThingIcons, the selected one lit and carrying a Face), **Age · {range}** (segmented Little / Kid / Big kid) and **Personality** (segmented Silly / Sweet / Brave). Changing any of them clears the no‑repeat memory and the speech bubble, so the next tap is a fresh line. |
+| D‑02 | Stage: ThingIcon 148 with Face on the thing's tint, plus a speech bubble (`role="status"`, `aria-live="polite"`) that reads "Tap something below and listen." until something is said. Controls are the events that thing actually has: **Fill · Sip · Drop · Pick up · Shake · Tap** for a bottle, with **Open** (lunchbox), **Brush 2 min** (toothbrush) and **Left behind** (backpack) leading for those things. Adding the remaining events — Put down, Empty, Close, Pack, Zip, Start brushing, Short brush — is **P1**: the playground is the sales demo, and `brush_done` without `brush_start` under‑sells the toothbrush story. |
+| D‑03 | When a control is tapped, Then a line is picked for thing × event × band × personality avoiding the last 3, the bubble shows it, the phone speaks it (X‑07), a tap haptic fires, the Face takes the event's mood for 3.2 s, and the event is prepended to the **What happened** log (kid words + clock time, last 20). Footer: "Nothing here leaves your phone." |
+| D‑04 | The playground drives the content engine directly rather than the simulated transport, so it never applies quiet hours or mute and a demo always speaks. A "Simulate quiet hours" footer toggle is **P2**; routing the playground through `SimulatedTransport` so it exercises the same path as real hardware is **P1** for engineering value. |
+| D‑05 | The screen is presentation‑grade: no dev labels, works offline, and when the browser cannot speak it says so on request ("This browser can't speak, but the lines still show above") rather than failing silently. A landscape tablet layout with controls beside the hero is **P2**. |
+| D‑06 | Given demo mode is off, Then `/demo` still works — it never touches real tags — and is reachable from Home's empty state, Welcome and Settings. An **Add a real tag** CTA on this screen is **P2**. |
 
 ---
 

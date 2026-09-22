@@ -96,7 +96,7 @@ export function Welcome() {
 
         <section className={s.slide} aria-label="Set up in 60 seconds">
           <div className={s.hero}>
-            <img className={s.tagArt} src="/icons/icon.svg" alt="" width={176} height={176} />
+            <img className={s.tagArt} src={`${import.meta.env.BASE_URL}icons/icon.svg`} alt="" width={176} height={176} />
           </div>
           <h1 className={s.title}>Set up your first tag in 60 seconds.</h1>
           <p className={s.text}>Pick who it’s for, what it’s attached to, and a personality. That’s it.</p>
