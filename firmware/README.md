@@ -8,12 +8,14 @@ Firmware for the tag: nRF52840 under Zephyr (nRF Connect SDK). Design docs live 
 |---|---|---|
 | `src/tagalong_protocol.c` | **Done, tested** | Encode/decode for Config, Info, Event and Control frames. Byte-identical to the app's TypeScript codec, enforced by a test. |
 | `src/tagalong_policy.c` | **Done, tested** | Rate limiting, quiet hours, mute, per-event debounce, minimum gap, no-repeat clip selection. |
-| `src/event_engine.c` | To write | Sensor fusion and per-thing classifiers. Spec: `../docs/firmware/event-engine-spec.md`, thresholds: `../docs/hardware/sensing-and-event-detection.md`. |
+| `src/tagalong_events.c` | **Done, tested** | Sensor fusion and per-thing classifiers: drop, pickup/putdown, shake, long-still, transport rejection, bottle fill/sip/empty, brushing sessions, lunchbox lid, backpack zip and left-behind. Thresholds: `../docs/hardware/sensing-and-event-detection.md`. |
 | `src/ble_service.c` | To write | GATT table and advertising policy per ADR‑007. |
 | `src/audio.c` | To write | QSPI read, ADPCM decode, I²S playback, SPL clamp. |
 | `src/power.c` | To write | Power states from `../docs/hardware/system-architecture.md` §3. |
 
-The two finished modules are deliberately the ones that are pure logic: they carry the product's promises (never talk over itself, silent at night, never nag) and they are testable without hardware, so they are worth getting right before a board exists.
+The finished modules are deliberately the ones that are pure logic: they carry the product's promises (never talk over itself, silent at night, never nag, never react to nothing) and they are testable without hardware, so they are worth getting right before a board exists.
+
+The event tests are written against synthetic sensor traces and are checked by **negative controls**: disabling transport rejection, the drop's free-fall gate, the fill stillness requirement or the lunchbox dark-duration rule each makes a specific test fail. A test that still passes when you break the thing it claims to test is not a test.
 
 ## Host tests — no hardware needed
 

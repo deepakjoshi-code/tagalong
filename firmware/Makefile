@@ -13,8 +13,8 @@ CFLAGS  ?= -std=c99 -Wall -Wextra -Werror -Wshadow -Wconversion -O2
 INCLUDES = -Iinclude -Itests
 BUILD    = build
 
-SRC      = src/tagalong_protocol.c src/tagalong_policy.c
-TESTS    = tests/test_protocol.c tests/test_policy.c
+SRC      = src/tagalong_protocol.c src/tagalong_policy.c src/tagalong_events.c
+TESTS    = tests/test_protocol.c tests/test_policy.c tests/test_events.c
 BINS     = $(patsubst tests/%.c,$(BUILD)/%,$(TESTS))
 
 .PHONY: all test vectors clean
