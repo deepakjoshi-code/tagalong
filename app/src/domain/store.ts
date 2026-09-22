@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { clear as idbClear, del as idbDel, get as idbGet, set as idbSet } from 'idb-keyval'
 import { newId } from '@/lib/id'
+import { requestPersistentStorage } from '@/lib/persistence'
 import {
   DEFAULT_QUIET_HOURS,
   DEFAULT_SETTINGS,
@@ -76,6 +77,7 @@ export const useStore = create<StoreState>()(
       addKid: (input) => {
         const kid: Kid = KidSchema.parse({ ...input, id: newId(), createdAt: Date.now() })
         set((s) => ({ kids: [...s.kids, kid] }))
+        void requestPersistentStorage()
         return kid
       },
       updateKid: (id, patch) =>
@@ -103,6 +105,7 @@ export const useStore = create<StoreState>()(
           createdAt: Date.now(),
         })
         set((s) => ({ tags: [...s.tags, tag] }))
+        void requestPersistentStorage()
         return tag
       },
       updateTag: (id, patch) =>

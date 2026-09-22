@@ -1,11 +1,15 @@
 import { useEffect, type ReactNode } from 'react'
 import { Toaster } from '@/design/components'
 import { useHydrated, useStore } from '@/domain/store'
+import { installBackgroundDisconnect } from '@/transport/manager'
 import { Splash } from './Splash'
+import { useLiveTagEvents } from './useLiveTagEvents'
 
 export function Providers({ children }: { children: ReactNode }) {
   const hydrated = useHydrated()
   const appearance = useStore((s) => s.settings.appearance)
+
+  useLiveTagEvents()
 
   useEffect(() => {
     const root = document.documentElement
@@ -18,6 +22,8 @@ export function Providers({ children }: { children: ReactNode }) {
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
+
+  useEffect(() => installBackgroundDisconnect(), [])
 
   if (!hydrated) return <Splash />
   return (

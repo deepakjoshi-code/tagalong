@@ -2,14 +2,17 @@
 
 | | |
 |---|---|
-| **Status** | Draft for build · 2026‑09‑22 |
+| **Status** | Build in progress · app v0.1.0 prototype complete · 2026‑09‑22 |
 | **Owner** | Product (founder is approver) |
 | **Derives from** | `docs/00-product-brief.md` (north star), `docs/adr/ADR-001…007`, `docs/design/design-spec.md`, `docs/architecture/app-architecture.md`, `docs/protocol/tag-protocol.md` |
+| **Consistent with** | `docs/research/market-research.md`, `docs/research/competitive-analysis.md`, `docs/research/user-research-plan.md` |
 | **Scope** | v1.0 app (PWA) + v1.0 tag behaviour. v1.1+ items are marked and live in `docs/02-roadmap.md` |
 
 ## 0. How to read this document
 
 - Where this PRD and the brief/ADRs/design spec/protocol overlap, **they win**. This PRD adds detail; it never overrides. Items that need a follow‑up change elsewhere are listed in §13.
+- **The app already exists.** `tagalong/app` is a working PWA at v0.1.0: onboarding, the six‑step add‑tag wizard, tag detail, kids, settings, Privacy Center, demo playground, Web Bluetooth and simulated transports, and 2,052 English phrase lines in `content/packs`. §5 describes the shipped behaviour where behaviour is shipped, and marks everything still to build. **§5.9 is the single list of gaps between this document and the code** — engineering plans from that table, QA tests against §5.
+- Requirements that describe the tag describe firmware that does **not** exist yet; the app talks to `SimulatedTransport` until the P0 rig runs (roadmap §4).
 - Requirement IDs: `X‑` cross‑cutting app · `W‑` Welcome · `H‑` Home · `AT‑n.m` Add‑tag step n · `TD‑` Tag detail · `K‑` Kids · `S‑` Settings · `PC‑` Privacy Center · `D‑` Demo · `TAG‑` tag behaviour · `E‑` edge case · `A11Y‑` · `L10N‑`.
 - Priority: **P0** must ship in v1.0; **P1** ship in v1.0 unless it slips the date; **P2** target v1.1. Unmarked = P0.
 - "Parent" = the app user. "Kid" = the tag's audience. "Thing" = the object the tag is attached to.
@@ -125,125 +128,150 @@ Morning: first pickup after a long still → `good_morning` (if nudges on). Scho
 - Given the service worker updates, Then the new version activates silently (`autoUpdate`) and a non‑blocking toast reads "Tagalong updated".
 
 **X‑03 Local storage and durability.**
-- Given the first tag or kid is saved, Then the app calls `navigator.storage.persist()` inside that user gesture; if denied, Privacy Center shows "Your browser may clear this data if you don't use the app for a while — install the app to keep it safe."
-- Given iOS Safari not installed to the Home Screen, Then Welcome slide 3 and Settings show an "Add to Home Screen" explainer with the 7‑day eviction warning (E‑06).
-- Given app start or any event insert, Then events older than 7 days are pruned.
-- Soft limits: 6 kids, 8 tags. Exceeding shows a friendly limit message, no crash.
+- All state lives in one IndexedDB record (`tagalong:v1`, via `idb-keyval`); name clips are separate blobs keyed `clip:<kidId>`. Every record is re‑validated with zod on rehydrate and a single corrupt record is dropped rather than failing the whole store.
+- Given app start, a return to the foreground, or any event insert, Then events older than `retentionDays` (7) are pruned.
+- Given the first tag or kid is saved, Then the app calls `navigator.storage.persist()` inside that user gesture; if denied, Privacy Center shows "Your browser may clear this data if you don't use the app for a while — install the app to keep it safe." **(gap: not implemented, P1)**
+- Given iOS Safari not installed to the Home Screen, Then Welcome slide 3 and Settings show an "Add to Home Screen" explainer with the 7‑day eviction warning (E‑06). **(gap: the Settings row exists, the eviction warning does not, P1)**
+- Soft limits: 6 kids, 8 tags. Exceeding shows a friendly limit message, no crash. **(gap: unenforced, P2 — nothing breaks above the limit, the list simply gets long)**
 
 **X‑04 Transport selection (ADR‑001).**
-- Given `settings.demoMode` is on **or** Web Bluetooth is unavailable, Then the simulated transport is used and every tag‑facing screen carries a visible "Demo" chip.
-- Given Web Bluetooth is available and demo mode off, Then `WebBluetoothTransport` is used. Features never reference a concrete transport.
+- `getTransport({ demoMode })` returns `{ transport, reason }` where reason is `demo` · `unsupported` · `bluetooth`. Demo mode always wins; no Web Bluetooth falls back to simulated with `reason: 'unsupported'` so the UI can explain instead of failing.
+- Reconnects route on the stored `deviceId`: ids created by the simulated transport always go back to it, so a demo tag never tries to reach real hardware.
+- Given the simulated transport is in use, Then the situation is stated in words — Home's subtitle reads "Demo mode is on", the wizard says it will "create a pretend tag", and a demo tag's card reads "Demo tag · try it in the playground". Features never reference a concrete transport.
 
 **X‑05 Connection lifecycle and consent.**
-- Given a tag was paired **in this app**, When the app comes to the foreground or the parent taps a card, Then the app may reconnect without a chooser **only where the browser exposes previously permitted devices**; otherwise reconnect requires a tap on **Connect** which opens the chooser (the tag must be in its pairing window or within 30 min of motion).
-- Never connect to, or list, a device the parent did not pair in‑app. Never auto‑reconnect in the background.
-- On every connect: read `Info`, validate `proto = 1`, subscribe to `Event` and `Battery`, replay buffered frames, send `04 <minutes>` (set time). If `Info.uptimeMin` is lower than the last seen value, treat it as a reboot (TAG‑TIME‑03).
-- Disconnect within 10 s of the app going to background, after the sync completes.
+- Given a tag was paired **in this app**, When the parent opens its detail screen and taps an action, Then the app reconnects without a chooser **only where the browser exposes previously permitted devices** (`navigator.bluetooth.getDevices()`); otherwise the action fails with "Couldn't find that tag. Hold its button until it giggles, then try again." and the parent re‑pairs from the wizard.
+- Never connect to, or list, a device the parent did not pair in‑app. Never auto‑reconnect in the background: every connect is the direct result of a tap.
+- On every connect: read `Info` and store fw, hw rev, pack id/version, battery and charging state; subscribe to `Event` and `Battery`. The codec rejects any frame whose version byte is not 1 and any unknown event code; rejected frames are dropped silently rather than surfaced (E‑12).
+- Time reaches the tag inside every `TagConfig` write (`timeOfDayMin`). Sending the standalone `04 <minutes>` op on connect is specified for firmware parity; the op is encoded but not yet called. **(gap, P1 — matters once firmware exists, TAG‑TIME‑01)**
+- If `Info.uptimeMin` is lower than the last seen value, treat it as a reboot (TAG‑TIME‑03). **(gap, P1)**
+- Disconnect within 10 s of the app going to background, after the sync completes. **(gap, P1 — today connections are dropped only on Forget, Delete everything, or by the browser)**
 
-**X‑06 Error language.** Every transport/storage error maps to one plain sentence and one action (Retry · Turn on Bluetooth · Use demo tag · Hold the button again). No error codes, no "GATT", no stack traces.
+**X‑06 Error language.** Every transport error maps to one plain sentence through `describeTransportError` — seven codes (`unsupported`, `cancelled`, `not-found`, `disconnected`, `permission`, `gatt`, `bad-frame`), each with copy naming the recovery ("Hold its button until it giggles, then try again"). No error codes, no "GATT", no stack traces, never a device identifier.
 
 **X‑07 Speech preview (phone).**
-- Uses `speechSynthesis`; prefers voices with `localService === true`; rate/pitch per band × personality (architecture doc). The spoken text is always shown on screen as a caption (A11Y‑07).
-- Given no local voice exists, Then the app still speaks with the available voice and Privacy Center notes "Preview voices are provided by your phone's operating system."
-- Given speech is unsupported, Then a toast reads "Your browser can't speak previews — the tag will."
+- Uses `speechSynthesis`. Voice selection prefers a known‑good English voice by name (Samantha, Karen, Moira, Google US English, Google UK English Female, Microsoft Aria, Microsoft Zira), then the default English voice, then any English voice, then anything; the cache is invalidated on `voiceschanged`. Rate and pitch come from personality (silly 1.08/1.25 · sweet 0.95/1.10 · brave 1.00/0.90) multiplied by a band rate factor (little 0.92 · kid 1.00 · big 1.04).
+- The spoken text is always on screen before it is spoken — preview rows are the text, and the playground shows it in a `role="status"` bubble (A11Y‑07).
+- Given the chosen voice is a network voice, Then the preview still plays and Privacy Center notes "Preview voices are provided by your phone's operating system." **(gap: the note is not shown, P1 — voices are never filtered by `localService`, so a cloud voice on some Android builds could send preview text to the OS vendor. This is the only place where the zero‑network claim needs a caveat; see §14 Q6)**
+- Given speech is unsupported, Then the line is shown and never spoken, with "This browser can't preview voices. The tag still will."
 - Given iOS, Then speech starts only from a tap (WebKit gesture rule); the ▶ affordance is the gesture.
+- Any new utterance cancels the previous one, so previews never overlap.
 
-**X‑08 Appearance & haptics.** System/light/dark follows `settings.appearance`; all colours via tokens; haptics via `navigator.vibrate` only when `settings.haptics` and supported.
+**X‑08 Appearance & haptics.** System/light/dark follows `settings.appearance` and is applied as `data-theme` on the document root; all colours via tokens; haptics via `navigator.vibrate` only when `settings.haptics` and supported.
 
-**X‑09 Performance budgets.** Cold start to interactive ≤ 2.0 s on a 2022 mid‑range Android (Pixel 6a class) over the installed SW; route transitions ≤ 100 ms to first frame; JS bundle < 250 KB gz (architecture); config write round trip ≤ 2 s; event shows on Home ≤ 1 s after notify.
+**X‑09 Performance budgets.** Cold start to interactive ≤ 2.0 s on a 2022 mid‑range Android (Pixel 6a class) over the installed SW; route transitions ≤ 100 ms to first frame; JS + CSS < 250 KB gz (architecture; current build ≈ **212 KB gz** — 143 app, 42 motion, 18 vendor, 2 workbox, 7 CSS); config write round trip ≤ 2 s; event shows on Home ≤ 1 s after notify. The content packs are bundled, not fetched, and are the largest single contributor to the app chunk — a second language must be code‑split (L10N‑08).
 
 **X‑10 No personal data in logs.** `console.*` stripped in production; dev logging never includes names, clips, or event payloads (AGENTS.md).
 
-**X‑11 Kid‑friendly event words (UI copy, design spec §5 extended).**
+**X‑11 Kid‑friendly event words (UI copy, design spec §5 extended).** One string per event, defined once in `domain/events.ts` and used by cards, timelines and the playground log. Each event also carries a Face mood.
 
-| Event | Card/timeline text | Event | Text |
-|---|---|---|---|
-| pickup | Picked up | filled | Filled up |
-| putdown | Set down | sip | Had a sip |
-| drop | Took a tumble | empty | Ran dry |
-| shake | Got a shake | opened | Opened up |
-| tap | Said hi | closed | Closed up |
-| long_still | Waiting patiently | packed | Packed and ready |
-| good_morning | Said good morning | left_behind | Waited for you |
-| low_battery | Getting sleepy | zipped | Zipped up |
-| charging | Charging up | brush_start | Started brushing |
-| | | brush_done | Brushed the full two minutes |
-| | | brush_short | Quick brush |
+| Event | Card/timeline text | Mood | Event | Card/timeline text | Mood |
+|---|---|---|---|---|---|
+| pickup | Picked up | happy | filled | Filled up | excited |
+| putdown | Put down | neutral | sip | Had a sip | happy |
+| drop | Took a tumble | ouch | empty | Ran empty | curious |
+| shake | Got a shake | excited | opened | Opened up | excited |
+| tap | Got a tap | curious | closed | Closed up | happy |
+| long_still | Waited patiently | sleepy | packed | Got packed | happy |
+| good_morning | Said good morning | happy | left_behind | Waited to be remembered | curious |
+| low_battery | Got sleepy (low battery) | sleepy | zipped | Got zipped up | happy |
+| charging | Had a nap on the charger | sleepy | brush_start | Started brushing | excited |
+| | | | brush_done | Finished two minutes | excited |
+| | | | brush_short | Stopped early | curious |
 
-Relative time: "just now" (< 60 s), "N min ago", "N h ago", "Yesterday", weekday name (≤ 7 days). Never show exact seconds.
+Relative time (`lib/time.ts`): "just now" (< 45 s), "N min ago" (< 1 h), "N hr ago" (< 24 h), "yesterday", short weekday (< 7 days), then "Mon D". Exact clock times ("8:04 PM", locale‑formatted) appear only inside a day's timeline. Never show seconds.
 
-**X‑12 Nickname suggestions (`domain/nicknames.ts`).** bottle → Bottle Buddy · lunchbox → Lunch Pal · backpack → Pack Pal · toothbrush → Brushy · shoes → Zoomers · plush → Snuggle Pal · helmet → Captain Helmet · jacket → Cozy · other → Buddy. If the kid already has a tag with that nickname, append " 2".
+**X‑12 Nickname suggestions (`domain/nicknames.ts`, `domain/things.ts`).** Each thing carries an ordered nickname list; the first is the default and personality nudges the pick (sweet takes the second entry where one exists, silly and brave take the first).
+
+| Thing | Default | Alternatives |
+|---|---|---|
+| bottle | Bottle Buddy | Splash · Gulp · Sippy · Bubbles |
+| lunchbox | Lunch Pal | Munchie · Crunch · Boxy · Nibbles |
+| backpack | Packy | Sherpa · Pockets · Zip · Scout |
+| toothbrush | Brushy | Sparkle · Minty · Pearl · Swish |
+| shoes | Zoomers | Kicks · Stompy · Dash |
+| plush | Snuggles | Cuddles · Fuzzy · Beans |
+| helmet | Domey | Guardian · Shelly · Rocket |
+| jacket | Cozy | Zippy · Puff · Breezy |
+| other | Tagalong | Pip · Blip · Buddy |
+
+Duplicate nicknames within one kid are allowed and not de‑duplicated; the wizard field is free text, so the parent resolves it. Auto‑appending " 2" is **P2** and only worth building if usability sessions show confusion (H‑08 covers the real risk, which is two tags talking at once).
 
 ### 5.1 Welcome (`/welcome`)
 
 | ID | Given / When / Then |
 |---|---|
 | W‑01 | Given first launch (`settings.onboarded = false`), When the app opens, Then `/welcome` shows slide 1 ("Give anything a voice.") with the bottle ThingIcon face doing a subtle bounce (crossfade only under reduced motion), progress dots (1/3) and **Skip** top‑right. |
-| W‑02 | Given slide 1, When the parent swipes or taps next, Then slide 2 shows the lock glyph, "Made for kids. Private by design." and the sub‑copy *No account. No cloud. No microphone. Everything stays on your phone.* |
-| W‑03 | Given slide 3, Then the CTA **Get started** routes to `/tags/new` and marks onboarded; secondary **Try the demo** turns demo mode on and routes to `/demo`. |
-| W‑04 | Given onboarded = true, When the app opens, Then `/welcome` is skipped; it stays reachable from Settings → About → "See the welcome tour". |
-| W‑05 | Given an unsupported browser (no Web Bluetooth), Then slide 3 adds one footnote line: "Pairing a real tag needs Chrome or Edge on Android. Everything else works here." — no modal, no blocker. |
-| W‑06 | Given keyboard or screen‑reader use, Then slides are a labelled carousel (`role="group"`, `aria-roledescription="slide"`, "Slide 1 of 3"), arrow keys move, Skip is the first focusable element. |
+| W‑02 | Given slide 1, When the parent swipes or taps **Continue**, Then slide 2 shows the shield glyph, "Made for kids. Private by design.", the line *Everything stays on this phone and on the tag. We literally can't see your data.* and four chips: No account · No cloud · No microphone · No tracking. |
+| W‑03 | Given slide 3 ("Set up your first tag in 60 seconds."), Then the CTA **Get started** marks onboarded and routes to `/tags/new`; secondary **Try the demo** marks onboarded, turns demo mode on and routes to `/demo`. **Skip** (slides 1–2 only) marks onboarded and routes to `/tags`. |
+| W‑04 | Given onboarded = true, When the app opens, Then `/` redirects to `/tags` and `/welcome` is skipped. It stays reachable at `/welcome`; a "See the welcome tour" row in Settings → About is **P2**. |
+| W‑05 | Given an unsupported browser (no Web Bluetooth), Then slide 3 adds one footnote line: "Pairing a real tag needs Chrome or Edge on Android. Everything else works here." — no modal, no blocker. **(gap, P1 — the equivalent explainer exists at AT‑1.6, so nobody hits a dead end; this only moves the news one screen earlier)** |
+| W‑06 | Given keyboard or screen‑reader use, Then slides are a labelled carousel; swipe position drives the progress dots and programmatic scrolls are ignored until they settle so the two never fight. Per‑slide "Slide 1 of 3" announcements and arrow‑key navigation are **P1** (`aria-roledescription="carousel"` and per‑slide labels ship today). |
 
 ### 5.2 Tags — Home (`/tags`)
 
 | ID | Given / When / Then |
 |---|---|
-| H‑01 | Given no tags, Then the empty state shows the ThingIcon trio, "No tags yet", primary **Add a tag**, tertiary **Try the demo**. |
-| H‑02 | Given ≥ 1 tag, Then each card shows: ThingIcon with Face (reacting to the last event for 4 s after it arrives; idle blink every 4–7 s), nickname, line 2 "Kid name · Personality" chip (kid name falls back to the age‑band label when no name), line 3 last event in kid words + relative time, BatteryPill top‑right (percent + icon; amber < 15 %, red < 5 %, bolt when charging, "—" when never synced). Cards are ordered by last event time, most recent first. |
-| H‑03 | Given a card, When tapped, Then `/tags/:id` opens with a shared‑element transition of the ThingIcon (crossfade under reduced motion). |
-| H‑04 | Given a card, When long‑pressed (500 ms) or the context key is used, Then a bottom Sheet offers **Mute for an hour** and **Forget…** (destructive). Mute sends `03 3C 00` when connected, otherwise stores `mutedUntil` and sends on next connect; the card shows a "Muted · 59 min" chip. |
-| H‑05 | Given a tag that is not connected, Then the card shows a subtle "Not connected · synced 2 h ago" footer; When tapped, Then detail offers **Connect**. Connected tags show a small live dot. |
-| H‑06 | Given the install banner conditions (X‑01), Then a dismissible banner "Add Tagalong to your Home Screen" sits above the list; **Install** calls the deferred prompt; **Not now** hides it for 30 days. |
-| H‑07 | Given demo mode on, Then a "Demo" chip appears on simulated cards and a header pill "Demo mode" links to Settings. |
-| H‑08 | Given the same kid has two or more tags of the same thing type, Then a one‑time dismissible hint appears: "Two Bottle Buddies for the same kid? They may chat over each other." (E‑02). |
-| H‑09 | Given the `+` button, When tapped, Then `/tags/new` opens as a full‑screen sheet; the tab bar hides. |
+| H‑01 | Given no tags, Then the empty state shows the ThingIcon trio (lunchbox · bottle bouncing · backpack), "No tags yet", "Add your first Tagalong and give something a voice.", primary **Add a tag**, tertiary **Try the demo**. |
+| H‑02 | Given ≥ 1 tag, Then each card shows: ThingIcon 60 with Face (the mood of the last event while it is under 10 minutes old, then neutral; sleepy while muted), nickname, line 2 "kid name · personality" (kid name falls back to "{Band} kid", or "Unassigned" if the kid record is gone), line 3 last event in kid words + relative time — or "No activity yet" / "Demo tag · try it in the playground" — and a BatteryPill (percent + icon, amber ≤ 15 %, bolt when charging, hidden entirely until the tag has been read once). A muted tag also shows a bell‑off glyph. Relative times refresh every 30 s. |
+| H‑03 | Given a card, When tapped, Then `/tags/:id` opens. A shared‑element transition of the ThingIcon is **P2**; the current transition is the default route change. |
+| H‑04 | Given a card, When long‑pressed (500 ms) or the context key is used, Then a bottom Sheet offers **Mute for an hour** and **Forget…** (destructive). **(gap, P1 — both actions exist on the detail screen, so nothing is unreachable; this is a two‑tap saving on the most common action.)** Mute writes `mutedUntil` locally and sends `03 3C 00` on the next successful connect. |
+| H‑05 | Given a tag that is not connected, Then the card shows a subtle "Not connected · synced 2 h ago" footer; When tapped, Then detail offers **Connect**. Connected tags show a small live dot. **(gap, P1 — today connection state is implicit: an action either works or returns the plain‑language error of X‑06. This is the top P1 for the DVT study, because a parent cannot currently tell "out of range" from "broken".)** |
+| H‑06 | Given `beforeinstallprompt` has fired and the app is not already installed, Then a dismissible card "Add Tagalong to your home screen / Works offline. Nothing to sign up for." sits above the list; **Install** calls the deferred prompt; the X dismisses it. Persisting the dismissal for 30 days is **P1** (today it returns on the next launch). |
+| H‑07 | Given demo mode on, Then Home's subtitle reads "Demo mode is on", a footer note explains where demo tags react, and simulated cards say so in their event line (X‑04). |
+| H‑08 | Given the same kid has two or more tags of the same thing type, Then a one‑time dismissible hint appears: "Two Bottle Buddies for the same kid? They may chat over each other." (E‑02). **(gap, P2 — the firmware's randomised pre‑speech delay, TAG‑UT‑03, is the real mitigation.)** |
+| H‑09 | Given the `+` button ("Add a tag"), When tapped, Then `/tags/new` opens full‑screen; the tab bar is absent on that route. |
 
 ### 5.3 Add‑tag wizard (`/tags/new`, full‑screen sheet, stepper 1–6)
 
-**Common:** Back returns one step preserving input; Close (X) asks "Discard this setup?" only after step 1 has connected a tag (disconnects it; no config written). The wizard is a single route with internal steps; browser Back behaves like the Back button. Step header shows "Step n of 6".
+**Common:** the wizard is one route (`/tags/new`) with six internal steps — `find · kid · thing · personality · sound · send` — and a stepper header carrying the step title, a Back arrow (steps 2–5) and a Close X. Back preserves every field. Close on step 1, or on the final step, leaves immediately; in between it asks "Leave setup? Your tag won't be added. You can start again anytime." Progress is shown as dots rather than "Step n of 6". Nothing is written to the tag until step 6.
 
 **Step 1 — Find your tag**
 
 | ID | Given / When / Then |
 |---|---|
-| AT‑1.1 | Given Web Bluetooth and demo off, When **Search** is tapped, Then the chooser opens filtered to `services: [Tagalong]` **and** `manufacturerData: {companyIdentifier: 0xFFFF, dataPrefix: [1,0,0,1], mask: [0xFF,0,0,0x01]}` (pairing flag set), so only tags in their pairing window are listed. The screen shows "Looking for tags…" and **Cancel**. |
-| AT‑1.2 | Given the parent selects a tag, Then the app connects, reads `Info`, validates `proto = 1`, and advances to step 2 within 3 s; the tag confirms with two white LED pulses. The tag's `deviceId` is held in wizard state; nothing is persisted yet. |
-| AT‑1.3 | Given the phone shows a system pairing prompt (Just Works), When accepted, Then bonding completes and the wizard continues; When declined, Then inline text reads "Pairing was cancelled." with **Try again** (tag may need the button held again after 60 s). |
-| AT‑1.4 | Given the chooser closes with no selection, Then the step shows "No tag selected" inline, no modal; **Search** remains primary. |
-| AT‑1.5 | Given Bluetooth is off or the OS permission is denied, Then a sheet explains the exact OS steps (Android: Bluetooth on; Chrome "Nearby devices" permission) with **Retry**. |
-| AT‑1.6 | Given Web Bluetooth is unavailable (iOS Safari, Firefox, desktop Safari), Then step 1 shows the illustrated tag greyed, copy "Pairing needs Chrome or Edge on Android. On iPhone, the Tagalong app is coming soon." and primary **Use demo tag**; nothing is hidden or broken. |
-| AT‑1.7 | Given the selected tag is bonded to another phone (encrypted read fails / pairing rejected), Then copy reads "This tag is set up with another phone. To reset it: put it on the charger and hold the button for 10 seconds until the light blinks red." with **Try again**. |
-| AT‑1.8 | Given the selected `deviceId` already exists in this app, Then the wizard closes and opens that tag's detail with toast "Bottle Buddy is already set up." |
-| AT‑1.9 | Given the connection drops at any later step, Then a non‑blocking banner "Tag disconnected — hold its button again" appears; the parent may continue filling steps; step 6 reconnects before writing. |
-| AT‑1.10 | Given demo mode on, Then **Search** shows an in‑app list with one "Demo tag" (no chooser). |
+| AT‑1.1 | Given Web Bluetooth and demo off, When **Search** is tapped, Then the chooser opens filtered to `services: [Tagalong service UUID]`, with battery and device‑information as optional services. The copy above reads "Hold the button on the tag until it giggles, then tap Search." |
+| AT‑1.1a | Narrowing the chooser further with `manufacturerData: {companyIdentifier: 0xFFFF, dataPrefix: [1,0,0,1], mask: [0xFF,0,0,0x01]}` — the pairing‑window flag — so a neighbour's tag can never be listed is **P1, blocked on firmware**: the filter can only be validated once a tag advertises. Add it at the P0 rig, not before (§13 A‑07). |
+| AT‑1.2 | Given the parent selects a tag, Then its `deviceId` and name are held in wizard state and the wizard advances to step 2. Nothing is persisted and no connection is held open. Reading `Info` and confirming with two white LED pulses at this point is **P1** (it happens at step 6 today). |
+| AT‑1.3 | Given the phone shows a system pairing prompt (Just Works), When accepted, Then bonding completes and the wizard continues; When declined, Then the toast reads "Bluetooth permission was denied. You can change this in your browser settings." and **Search** stays primary. |
+| AT‑1.4 | Given the chooser closes with no selection, Then a toast reads "No tag was chosen." and the step is unchanged — no modal, no dead end. |
+| AT‑1.5 | Given Bluetooth is off or the OS permission is denied, Then the permission sentence above is shown. A sheet with the exact OS steps (Android: Bluetooth on; Chrome "Nearby devices" permission) is **P1**. |
+| AT‑1.6 | Given Web Bluetooth is unavailable (iOS Safari, Firefox, desktop Safari), Then step 1 shows a warning panel — "This browser can't use Bluetooth yet. Chrome on Android works today, and the iPhone app is coming. You can still try everything with a demo tag." — and **Use a demo tag instead** turns demo mode on and creates the tag. Nothing is hidden or broken. |
+| AT‑1.7 | Given the selected tag is bonded to another phone (encrypted read fails / pairing rejected), Then copy reads "This tag is set up with another phone. To reset it: put it on the charger and hold the button for 10 seconds until the light blinks red." with **Try again**. **(gap, P0 for hardware launch — needs firmware to reject the bond first; today such a tag surfaces the generic `gatt` message.)** |
+| AT‑1.8 | Given the selected `deviceId` already exists in this app, Then the wizard closes and opens that tag's detail with toast "Bottle Buddy is already set up." **(gap, P1 — today a second setup of the same tag creates a second card.)** |
+| AT‑1.9 | Given the connection drops at any later step, Then step 6 simply reconnects before writing; a mid‑wizard banner is **P2** because no connection is held between steps. |
+| AT‑1.10 | Given demo mode on, Then the step says so ("Demo mode is on, so we'll create a pretend tag you can play with") and the button reads **Create a demo tag** — no chooser. |
+| AT‑1.11 | Every state carries the privacy line: "Pairing happens directly between this phone and the tag. Nothing is sent anywhere else." |
 
 **Step 2 — Who's it for?**
 
 | ID | Given / When / Then |
 |---|---|
-| AT‑2.1 | Given existing kids, Then their Avatars (initial or age‑band glyph) appear first; **New kid** is always last. Selecting an existing kid advances. |
-| AT‑2.2 | Given **New kid**, Then the form shows: first name (optional; helper "Only shown on this phone. Never sent to the tag.") and three large age‑band cards: **Little** 2–4 · **Kid** 5–7 · **Big kid** 8–12, each with a one‑line description of the voice style. |
-| AT‑2.3 | Given a name is typed, Then it is trimmed, max 24 chars, any script; it is never stored anywhere but this device's IndexedDB. |
-| AT‑2.4 | Given no age band is selected, Then **Next** is disabled with the reason in the button's accessible description. |
+| AT‑2.1 | Given existing kids, Then their Avatars (initial, or "?" with no name) appear first with name and age range; **New kid** is always last. Selecting an existing kid enables **Continue**. With no kids yet, the new‑kid form is open from the start. |
+| AT‑2.2 | Given **New kid**, Then the form shows: first name (optional; helper "Stored only on this phone. The tag never receives a name as text.") and three age‑band cards — **Little** 2–4 "Short words, big giggles" · **Kid** 5–7 "Jokes and sidekick energy" · **Big kid** 8–12 "Witty, never babyish". `kid` is pre‑selected so the step can always be completed in one tap. |
+| AT‑2.3 | Given a name is typed, Then it is trimmed, max 24 chars, any script, autocomplete off; it is never stored anywhere but this device's IndexedDB and never encoded into `TagConfig`. |
+| AT‑2.4 | Given an existing kid is being chosen and none is selected, Then **Continue** is disabled. A band is always selected in the new‑kid form, so that path cannot be blocked. |
 | AT‑2.5 | (P2) Given the parent prefers, Then a "Help me choose" link accepts a birth year and highlights the band; the birth year is not stored (ADR‑006). |
+| AT‑2.6 | The step's sub‑copy states the consequence and the escape hatch: "The age band shapes the words, jokes and pace. You can change it anytime." |
 
 **Step 3 — What's it attached to?**
 
 | ID | Given / When / Then |
 |---|---|
-| AT‑3.1 | Then a 3‑column grid shows the 9 things in this order: bottle, lunchbox, backpack, toothbrush, shoes, plush, helmet, jacket, other; full‑pack things carry a "Full pack" micro‑label. |
-| AT‑3.2 | When a thing is selected, Then only it shows a Face; the header tint changes to the thing tint; **Next** enables. |
-| AT‑3.3 | Given a basic thing (shoes, plush, helmet, jacket, other), Then a footnote reads "Reacts to pickups, drops, shakes and taps." |
+| AT‑3.1 | Then a grid shows the 9 things in this order with their labels: Water bottle, Lunchbox, Backpack, Toothbrush, Shoes, Stuffed friend, Helmet, Jacket, Something else. A "Full pack" micro‑label on the four full‑pack things is **P2**; AT‑3.3 carries the same information in words. |
+| AT‑3.2 | When a thing is selected, Then only it shows a Face, the tile is marked `aria-pressed`, a selection haptic fires, and the nickname is re‑suggested from X‑12 (overwriting an untouched suggestion). `bottle` is pre‑selected, so **Continue** is never blocked. |
+| AT‑3.3 | Then a footnote under the grid gives the mount hint for the selected thing — e.g. bottle "Strap it around the bottle, flush against the side.", lunchbox "Stick it inside the lid, near the latch.", toothbrush "Slide the sleeve onto the base of the handle." This is the one place the app teaches placement, and placement drives detection quality (TAG‑EV‑03). |
+| AT‑3.4 | Given a basic thing (shoes, plush, helmet, jacket, other), Then it uses the `generic` pack with per‑thing flavour lines for pickup, putdown, drop and shake, and falls back to `generic` for everything else (§6.13). |
 
 **Step 4 — Pick a personality**
 
 | ID | Given / When / Then |
 |---|---|
-| AT‑4.1 | Then three cards (Silly, Sweet, Brave) each show one sample line for the chosen thing × band and a ▶ button; ▶ speaks it on the phone (X‑07) and shows the caption; the Face reacts. |
-| AT‑4.2 | When a card is selected, Then the nickname field pre‑fills from X‑12 and remains editable (max 20 chars, no emoji stripping — any script allowed). |
-| AT‑4.3 | Given the tag is connected and outside quiet hours, When ▶ is tapped, Then the app **also** sends `02 <eventType>` so the tag speaks the line; if the tag is disconnected the phone alone speaks. (Parent hears the real voice; the sample event is `pickup`.) |
-| AT‑4.4 | When ▶ is tapped again on the same card, Then a different line from the same cell plays (no repeat within 3). |
+| AT‑4.1 | Then three cards — **Silly** "Goofball. Sound effects. Puns." · **Sweet** "Warm, cosy, always cheering you on." · **Brave** "Adventurer. Hero. Hype squad of one." — each show a fixed sample line for the chosen band with `{{name}}` resolved, plus an icon. Selecting a card fires a haptic and marks it `aria-pressed`. |
+| AT‑4.2 | Below the cards, "Says things like…" lists three real pack lines for the thing's headline event (bottle → `filled`, toothbrush → `brush_done`, everything else → `pickup`) for the selected personality. Tapping a line speaks it on the phone (X‑07); the line is the caption. |
+| AT‑4.3 | Then the nickname field pre‑fills from X‑12 and remains editable — max 30 chars, any script, no emoji stripping. **Continue** is disabled while it is blank. |
+| AT‑4.4 | Given the tag is connected and outside quiet hours, When a line is tapped, Then the app **also** sends `02 <eventType>` so the tag speaks it in its own voice; if the tag is unreachable the phone alone speaks. **(gap, P0 for hardware launch — the `preview` op is implemented in the codec and transport but not yet wired to this screen. Hearing the real voice before choosing is the point of this step; the phone's synthetic voice is a stand‑in, and we must not let parents choose a personality on it.)** |
+| AT‑4.5 | When the personality changes, Then the three lines re‑roll for the new personality; repeat previews avoid the last 3 lines of the cell (`pickPhrase`). |
 
 **Step 5 — Sound**
 

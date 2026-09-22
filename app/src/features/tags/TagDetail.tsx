@@ -24,7 +24,7 @@ import { useStore } from '@/domain/store'
 import { THING_META } from '@/domain/things'
 import { DEFAULT_SETTINGS, PERSONALITIES, type Personality } from '@/domain/types'
 import { haptics } from '@/lib/haptics'
-import { canSpeak, speak } from '@/lib/speech'
+import { SPEECH_UNAVAILABLE_COPY, canSpeak, speak, speechUnavailableReason } from '@/lib/speech'
 import { formatMinutesOfDay, formatTime } from '@/lib/time'
 import { describeTransportError } from '@/transport'
 import { connectTag, disconnectTag, syncTagConfig } from '@/transport/manager'
@@ -109,7 +109,10 @@ export function TagDetail() {
   }
 
   const say = async (text: string) => {
-    if (!canSpeak()) return toast.show('This browser can’t preview voices. The tag still will.')
+    if (!canSpeak()) {
+      const reason = speechUnavailableReason()
+      return reason === 'none' ? undefined : toast.show(SPEECH_UNAVAILABLE_COPY[reason])
+    }
     await speak(text, { ageBand: kid.ageBand, personality: tag.personality, volume: tag.volume / 100 })
   }
 

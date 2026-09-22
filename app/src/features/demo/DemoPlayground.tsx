@@ -24,7 +24,7 @@ import {
   type ThingType,
 } from '@/domain/types'
 import { haptics } from '@/lib/haptics'
-import { canSpeak, speak, stopSpeaking } from '@/lib/speech'
+import { SPEECH_UNAVAILABLE_COPY, canSpeak, speak, speechUnavailableReason, stopSpeaking } from '@/lib/speech'
 import { formatTime } from '@/lib/time'
 import s from './DemoPlayground.module.css'
 
@@ -178,7 +178,10 @@ export function DemoPlayground() {
           variant="tertiary"
           size="lg"
           block
-          onClick={() => toast.show('This browser can’t speak, but the lines still show above.')}
+          onClick={() => {
+            const reason = speechUnavailableReason()
+            if (reason !== 'none') toast.show(SPEECH_UNAVAILABLE_COPY[reason])
+          }}
         >
           Why can’t I hear anything?
         </Button>

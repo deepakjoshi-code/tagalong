@@ -1,5 +1,5 @@
-import { Eraser, FileJson, ShieldCheck, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Eraser, FileJson, HardDrive, ShieldCheck, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button, Card, ListGroup, ListRow, NavBar, Screen, Sheet, toast } from '@/design/components'
 import { privacyInventory } from '@/domain/selectors'
 import { useStore } from '@/domain/store'
@@ -7,12 +7,21 @@ import { buildExport, downloadJson } from '@/lib/exportData'
 import { deleteAllClips } from '@/lib/clips'
 import { plural } from '@/lib/format'
 import { disconnectAll } from '@/transport/manager'
+import { isIosSafari, isStoragePersisted, requestPersistentStorage } from '@/lib/persistence'
+import { isStandalone } from '@/lib/install'
 
 export function PrivacyCenter() {
   const state = useStore()
   const inv = privacyInventory(state)
   const [wipeSheet, setWipeSheet] = useState(false)
   const [confirmText, setConfirmText] = useState('')
+  const [persisted, setPersisted] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    void isStoragePersisted().then(setPersisted)
+  }, [])
+
+  const atEvictionRisk = persisted === false && isIosSafari() && !isStandalone()
 
   const exportAll = () => {
     downloadJson('tagalong-data.json', buildExport(state))
@@ -54,6 +63,36 @@ export function PrivacyCenter() {
         <ListRow title="Audio or video" value="Never" />
         <ListRow title="Analytics or crash reports" value="Never" />
         <ListRow title="Third-party services" value="None" />
+      </ListGroup>
+
+      <ListGroup
+        header="Keeping your data safe"
+        footer={
+          persisted
+            ? 'Your browser has been asked to keep this data and agreed. It stays until you delete it.'
+            : atEvictionRisk
+              ? 'On iPhone, Safari deletes web-app data after about 7 days without use. Add Tagalong to your Home Screen and it stays put.'
+              : 'Your browser may clear this data if storage runs low or the app goes unused for a long time.'
+        }
+      >
+        <ListRow
+          title="Storage"
+          value={persisted === null ? 'Checking…' : persisted ? 'Protected' : 'Not guaranteed'}
+        />
+        {persisted === false && (
+          <ListRow
+            title="Ask my browser to keep it"
+            icon={<HardDrive size={18} />}
+            iconTint="var(--accent)"
+            onClick={() => {
+              void requestPersistentStorage().then((ok) => {
+                setPersisted(ok)
+                toast.show(ok ? 'Your browser will keep this data' : 'Your browser declined. Installing the app helps.')
+              })
+            }}
+            chevron={false}
+          />
+        )}
       </ListGroup>
 
       <ListGroup header="Your data" footer="Export gives you a readable JSON file of everything except audio recordings.">

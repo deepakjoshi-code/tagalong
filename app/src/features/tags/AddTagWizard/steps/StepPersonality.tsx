@@ -6,7 +6,7 @@ import { PERSONALITY_META } from '@/domain/personalities'
 import { suggestNickname } from '@/domain/nicknames'
 import { PERSONALITIES, type AgeBand, type Personality } from '@/domain/types'
 import { samplePhrases } from '@/content/pickPhrase'
-import { canSpeak, speak } from '@/lib/speech'
+import { SPEECH_UNAVAILABLE_COPY, canSpeak, speak, speechUnavailableReason } from '@/lib/speech'
 import { haptics } from '@/lib/haptics'
 import s from '../Wizard.module.css'
 import type { StepProps } from './StepFind'
@@ -23,7 +23,8 @@ export function StepPersonality({ draft, patch, next, ageBand, kidName }: StepPr
 
   const say = async (text: string) => {
     if (!canSpeak()) {
-      toast.show('This browser can’t preview voices. The tag still will.')
+      const reason = speechUnavailableReason()
+      if (reason !== 'none') toast.show(SPEECH_UNAVAILABLE_COPY[reason])
       return
     }
     setSpeaking(text)
