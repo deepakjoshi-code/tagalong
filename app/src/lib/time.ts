@@ -32,3 +32,14 @@ export function isSameDay(a: number, b: number): boolean {
   const db = new Date(b)
   return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate()
 }
+
+/**
+ * Quiet hours travel to the tag as minutes/10 (see docs/protocol/tag-protocol.md),
+ * so the app snaps to the same grid and never promises a minute it cannot send.
+ */
+export const QUIET_STEP_MINUTES = 10
+
+export function snapToQuietStep(min: number): number {
+  const snapped = Math.round(min / QUIET_STEP_MINUTES) * QUIET_STEP_MINUTES
+  return Math.min(1430, Math.max(0, snapped))
+}

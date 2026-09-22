@@ -59,7 +59,7 @@ export function AddTagWizard() {
       case 'sound':
         return <StepSound draft={draft} patch={patch} next={next} />
       case 'send':
-        return <StepSend draft={draft} back={back} />
+        return <StepSend draft={draft} patch={patch} back={back} />
     }
   }, [step, draft, ageBand, kidName])
 

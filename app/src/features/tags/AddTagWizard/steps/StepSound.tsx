@@ -1,6 +1,6 @@
 import { Volume1, Volume2 } from 'lucide-react'
 import { Button, ListGroup, ListRow, Slider, Toggle } from '@/design/components'
-import { formatMinutesOfDay } from '@/lib/time'
+import { QUIET_STEP_MINUTES, formatMinutesOfDay, snapToQuietStep } from '@/lib/time'
 import s from '../Wizard.module.css'
 import type { StepProps } from './StepFind'
 
@@ -8,7 +8,7 @@ const timeValue = (min: number) =>
   `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
 const parseTime = (v: string) => {
   const [h = '0', m = '0'] = v.split(':')
-  return Number(h) * 60 + Number(m)
+  return snapToQuietStep(Number(h) * 60 + Number(m))
 }
 
 export function StepSound({ draft, patch, next }: StepProps) {
@@ -58,6 +58,7 @@ export function StepSound({ draft, patch, next }: StepProps) {
               trailing={
                 <input
                   type="time"
+                  step={QUIET_STEP_MINUTES * 60}
                   className={s.input}
                   style={{ width: 140, minHeight: 40 }}
                   aria-label="Quiet hours start"
@@ -71,6 +72,7 @@ export function StepSound({ draft, patch, next }: StepProps) {
               trailing={
                 <input
                   type="time"
+                  step={QUIET_STEP_MINUTES * 60}
                   className={s.input}
                   style={{ width: 140, minHeight: 40 }}
                   aria-label="Quiet hours end"

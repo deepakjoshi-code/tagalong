@@ -50,7 +50,7 @@ export class SimulatedTagDevice {
       hwRev: 1,
       packId: 1,
       packVersion: 1,
-      battery: this.battery,
+      battery: Math.round(this.battery),
       uptimeMin: Math.floor(this.uptimeSec(now) / 60),
       charging: this.charging,
       muted: this.mutedUntilUptimeSec > this.uptimeSec(now),

@@ -70,8 +70,17 @@ export async function connectTag(tag: Tag): Promise<TagConnection> {
   const { demoMode } = useStore.getState().settings
   const transport = transportForDevice(tag.deviceId, { demoMode })
   const conn = await transport.connect(tag.deviceId)
+
+  // Only cache the connection once it has proven itself: a link that cannot be
+  // read is worse than no link, because it would be reused forever.
+  let info: Awaited<ReturnType<TagConnection['readInfo']>>
+  try {
+    info = await conn.readInfo()
+  } catch (e) {
+    await conn.disconnect().catch(() => undefined)
+    throw e
+  }
   attach(tag.id, conn)
-  const info = await conn.readInfo()
 
   // The tag has no real-time clock, so hand it the time of day on every connection.
   await conn.control({ op: 'setTime', minutes: nowMinutesOfDay() }).catch(() => undefined)

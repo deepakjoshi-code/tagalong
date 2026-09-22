@@ -19,10 +19,11 @@ export function StepFind({ draft, patch, next }: StepProps) {
   const [searching, setSearching] = useState(false)
   const supported = isWebBluetoothSupported()
 
-  const search = async () => {
+  const search = async (forceDemo = false) => {
     setSearching(true)
     try {
-      const { transport, reason } = getTransport({ demoMode })
+      // Read demo mode at call time: "use a demo tag" flips it immediately before searching.
+      const { transport, reason } = getTransport({ demoMode: forceDemo || useStore.getState().settings.demoMode })
       const found = await transport.requestTag()
       haptics.success()
       patch({ deviceId: found.deviceId, deviceName: found.name, simulated: reason !== 'bluetooth' })
@@ -36,7 +37,7 @@ export function StepFind({ draft, patch, next }: StepProps) {
 
   const useDemoTag = () => {
     updateSettings({ demoMode: true })
-    void search()
+    void search(true)
   }
 
   return (
@@ -72,7 +73,7 @@ export function StepFind({ draft, patch, next }: StepProps) {
       </div>
 
       <div className={s.footer}>
-        <Button size="lg" block loading={searching} onClick={() => void search()} leading={<Bluetooth size={20} />}>
+        <Button size="lg" block loading={searching} onClick={() => void search(false)} leading={<Bluetooth size={20} />}>
           {demoMode ? 'Create a demo tag' : 'Search'}
         </Button>
         {!demoMode && (

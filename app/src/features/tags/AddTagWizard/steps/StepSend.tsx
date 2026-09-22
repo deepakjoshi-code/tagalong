@@ -14,7 +14,15 @@ import type { WizardDraft } from '../types'
 
 type Phase = 'sending' | 'done' | 'failed'
 
-export function StepSend({ draft, back }: { draft: WizardDraft; back: () => void }) {
+export function StepSend({
+  draft,
+  patch,
+  back,
+}: {
+  draft: WizardDraft
+  patch: (p: Partial<WizardDraft>) => void
+  back: () => void
+}) {
   const navigate = useNavigate()
   const [phase, setPhase] = useState<Phase>('sending')
   const [tagId, setTagId] = useState<string | null>(null)
@@ -35,8 +43,13 @@ export function StepSend({ draft, back }: { draft: WizardDraft; back: () => void
       if (!targetKid) {
         const name = draft.newKidName.trim()
         targetKid = store.addKid(name ? { ageBand: draft.newKidBand, displayName: name } : { ageBand: draft.newKidBand })
+        // Remember it on the draft so a retry reuses this kid instead of making another.
+        patch({ kidId: targetKid.id })
       }
-      const tag = store.addTag({
+
+      // Same for the tag: a retry must not add a second tag for the same device.
+      const existing = draft.deviceId ? store.tags.find((t) => t.deviceId === draft.deviceId) : undefined
+      const tag = existing ?? store.addTag({
         deviceId: draft.deviceId ?? 'sim-unknown',
         nickname: draft.nickname.trim(),
         thing: draft.thing,
@@ -49,6 +62,17 @@ export function StepSend({ draft, back }: { draft: WizardDraft; back: () => void
         simulated: draft.simulated,
       })
       setTagId(tag.id)
+      if (existing) {
+        store.updateTag(existing.id, {
+          nickname: draft.nickname.trim(),
+          thing: draft.thing,
+          kidId: targetKid.id,
+          personality: draft.personality,
+          volume: draft.volume,
+          quiet: draft.quiet,
+          nudges: draft.nudges,
+        })
+      }
       try {
         const conn = await connectTag(tag)
         await conn.writeConfig(buildTagConfig(tag, targetKid))
@@ -61,7 +85,9 @@ export function StepSend({ draft, back }: { draft: WizardDraft; back: () => void
         setPhase('failed')
       }
     })()
-  }, [draft])
+    // Runs once per mount; a retry remounts this step deliberately.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const lines = samplePhrases(
     {

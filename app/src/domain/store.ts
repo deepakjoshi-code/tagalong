@@ -62,6 +62,8 @@ export interface StoreActions {
 
 export interface StoreState extends StoreData, StoreActions {
   hydrated: boolean
+  /** True when this device's storage could not be read; data lives in memory only. */
+  storageError: boolean
   setHydrated: (v: boolean) => void
 }
 
@@ -72,6 +74,7 @@ export const useStore = create<StoreState>()(
     (set, get) => ({
       ...initialData,
       hydrated: false,
+      storageError: false,
       setHydrated: (v) => set({ hydrated: v }),
 
       addKid: (input) => {
@@ -167,9 +170,14 @@ export const useStore = create<StoreState>()(
           settings: settings.success ? settings.data : DEFAULT_SETTINGS,
         }
       },
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true)
-        state?.pruneEvents()
+      onRehydrateStorage: () => (state, error) => {
+        // Even when storage is blocked or corrupt we must render: the app still
+        // works in memory, and the parent can see and fix it in the Privacy Center.
+        if (error) useStore.setState({ hydrated: true, storageError: true })
+        else {
+          state?.setHydrated(true)
+          state?.pruneEvents()
+        }
       },
     },
   ),

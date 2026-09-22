@@ -31,21 +31,37 @@ export const canRecord = (): boolean =>
 /** Records from the phone microphone for up to `maxMs`. Resolves with the audio blob and duration. */
 export async function recordClip(maxMs = MAX_CLIP_MS): Promise<{ blob: Blob; durationMs: number }> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  const mime = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((m) => MediaRecorder.isTypeSupported(m))
-  const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
+  const stopTracks = () => stream.getTracks().forEach((t) => t.stop())
+
+  let rec: MediaRecorder
+  try {
+    const mime = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((m) => MediaRecorder.isTypeSupported(m))
+    rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
+  } catch (e) {
+    // Never leave the microphone open because construction failed.
+    stopTracks()
+    throw e
+  }
+
   const chunks: BlobPart[] = []
   const started = Date.now()
   return new Promise((resolve, reject) => {
     rec.ondataavailable = (e) => e.data.size && chunks.push(e.data)
     rec.onerror = () => {
-      stream.getTracks().forEach((t) => t.stop())
+      stopTracks()
       reject(new Error('Recording failed'))
     }
     rec.onstop = () => {
-      stream.getTracks().forEach((t) => t.stop())
+      stopTracks()
       resolve({ blob: new Blob(chunks, { type: rec.mimeType || 'audio/webm' }), durationMs: Date.now() - started })
     }
-    rec.start()
+    try {
+      rec.start()
+    } catch (e) {
+      stopTracks()
+      reject(e instanceof Error ? e : new Error('Recording failed'))
+      return
+    }
     setTimeout(() => rec.state !== 'inactive' && rec.stop(), maxMs)
   })
 }

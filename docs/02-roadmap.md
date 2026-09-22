@@ -4,11 +4,24 @@
 |---|---|
 | **Status** | Plan of record · 2026‑09‑22 |
 | **Horizon** | October 2026 → September 2027 (12 months), plus v2 direction |
-| **Derives from** | `docs/00-product-brief.md` §8, ADR‑001…007, `docs/01-prd.md` |
+| **Derives from** | `docs/00-product-brief.md` §8, ADR‑001…007, `docs/01-prd.md` (esp. §5.9 build state) |
 | **Owner** | Product; hardware dates owned jointly with the (to‑be‑hired) electrical engineer and the contract manufacturer |
+
+## 0. Where we are today (2026‑09‑22)
+
+| Stream | State | Consequence for this plan |
+|---|---|---|
+| App | **v0.1.0 exists and works.** Every screen in the design spec's IA, both transports, the full content engine, unit tests, Playwright smoke and screenshots, ≈ 212 KB gz, zero third‑party requests | The app is *ahead* of the plan. The October–November app columns below are hardening and firmware integration, not construction. The remaining app work is enumerated in PRD §5.9 and is small: 7 P0 items, all of which need firmware to exist |
+| Content | 5 EN packs, 513 cells, **2,052 lines**, 4 per cell, validator in place | Scripts are done. The next content milestone is a studio, not a writing room (December) |
+| Protocol | `tag-protocol.md` v1 fully implemented in `codec.ts` both ways, with a simulated device that behaves like firmware | Firmware can be written against a working reference and a test double from day one |
+| Firmware | Nothing exists | The critical path is entirely hardware and firmware |
+| Hardware | Nothing exists; no EE hired | **Hiring the EE is the single most schedule‑critical action in this document** |
+
+The practical read: we are not building an app and a tag in parallel any more. We are building a tag, and finishing an app against it. Plan reviews should look first at the EE hire and the CM shortlist, not at app velocity.
 
 ## 1. Planning principles
 
+0. **The app is not the constraint; the tag is.** Anything that trades app polish for hardware or firmware progress is the right trade until DVT.
 1. **Hardware ships once in this horizon.** One tag (hw rev 1) carries v1.0, v1.1 and v1.2. Everything else — app, firmware, content, mounts — iterates.
 2. **Signed firmware DFU ships in v1.0.** It is the only field‑fix path and the insurance that makes a single hardware revision viable.
 3. **Privacy review precedes every feature.** Any new data type or radio behaviour needs a new ADR before code (ADR‑002/007).
@@ -22,10 +35,10 @@
 
 | Stream | Scope |
 |---|---|
-| App (PWA) | Everything in `01-prd.md` §5 marked P0/P1: Welcome, Home, 6‑step Add‑tag wizard, Tag detail, Kids (with local‑only name clip recorder — see open question), Settings, Privacy Center (export, clear, delete), Demo playground, Web Bluetooth + simulated transports, install banner, offline, signed firmware DFU, EN UI |
+| App (PWA) | v0.1.0 today (all screens, both transports, content engine, offline, install) **plus** the PRD §5.9 P0 list — tag‑voice preview in the wizard, signed firmware DFU, factory reset on Forget with reset copy in both destructive sheets, age‑band fan‑out to a kid's tags, foreign‑bond copy, honest name‑clip footer, About legal/support content — and P1 items 1–5, of which connection state (H‑05/TD‑01) and the Attached‑to / For rows (TD‑02a) are the two the founder should treat as near‑P0 |
 | Firmware 1.0 | GATT service v1; all events for 4 full things + generic; utterance policy, quiet hours, mute, battery states, LED, button gestures incl. charger‑gated factory reset; 64‑frame buffer; ship mode; RPA advertising per ADR‑007; signed DFU |
 | Hardware rev 1 | ⌀38 × 12 mm puck; nRF52840; 16 MB QSPI; accel + cap‑sense + ALS + temp; I²S amp + 20 mm speaker; 150 mAh Li‑Po; magnetic 2‑pin charger; RGB LED ring; one button; IP67; cradle‑ring mount system with bottle strap and zipper loop in‑box |
-| Content | EN matrix: 4 full things × events × 3 bands × 3 personalities × ≥ 4 lines + generic pack; `{{name}}` lines in two versions; sound effects; mastered ADPCM packs pre‑loaded at factory |
+| Content | EN matrix **written and validated** (5 packs, 513 cells, 2,052 lines, 4 per cell); remaining work is recording: `{{name}}` lines in two versions incl. every band fallback vocative (PRD TAG‑NC‑01), sound effects, mastered ADPCM packs pre‑loaded at the factory |
 | GTM | US launch on DTC + Amazon; UK/CA/AU listings as markings allow; 1‑pack $29.99 in 4 colours, 2‑pack $49.99, Mount kit $7.99; Android Play listing (TWA); press and creator seeding |
 
 **Dependencies:** EE hire by mid‑Oct 2026 · CM selected by Jan 2027 · voice talent booked for Dec 2026 · certified Li‑Po cell selected by Nov 2026 · trademark decision by Nov 2026 (box artwork).
@@ -36,7 +49,7 @@
 
 | Stream | Scope |
 |---|---|
-| App | Same codebase in a Capacitor shell with `CapacitorTransport` (`@capacitor-community/bluetooth-le`) → iOS App Store; Android via Capacitor or TWA (choose one at G3 based on Play policy); ES and HI UI; **Language** row in Settings; **Restore from export** in Privacy Center; name‑clip transfer UI; pack update flow with progress |
+| App | Same codebase in a Capacitor shell with `CapacitorTransport` (`@capacitor-community/bluetooth-le`) → iOS App Store; Android via Capacitor or TWA (choose one at G3 based on Play policy); ES and HI UI; **Language** row in Settings; **Restore from export** in Privacy Center; name‑clip transfer UI; pack update flow with progress. **Two prerequisites land first, in the 1.1 track's opening weeks, not next to the recordings:** string externalisation to ICU (nothing is externalised today) and code‑splitting the phrase packs per language, since they are bundled into the app chunk and are its largest contributor (PRD L10N‑00, X‑09) |
 | Firmware 1.1 | `PackXfer` (chunked, CRC32, resumable); name‑clip region write/erase and `{{name}}` splicing; mute‑state visibility improvement if protocol v1.1 adds it; battery‑life tuning from field data (support tickets, not telemetry) |
 | Content | ES (Latin‑American neutral) and HI packs, transcreated and reviewed; 3 voices each; EN patch pack from in‑home findings |
 | GTM | iPhone launch campaign ("now for iPhone"); India readiness pending WPC/BIS (see §5); Spanish/Hindi landing pages |
@@ -75,9 +88,9 @@ Chinese New Year 2027 falls on 6 February; most CMs close ~30 Jan – 14 Feb. DV
 
 | Month | Hardware / Mechanical | Firmware | App | Content | Compliance | GTM / Ops | Gate |
 |---|---|---|---|---|---|---|---|
-| **Oct 2026** | EE hired; architecture and part selection; ID concepts → 1 direction; P0 rig (nRF52840‑DK + sensor breakouts + MAX98357A + speaker) | 0.1: GATT v1, config/event codec, simulated events on DK | 0.5: design system, Welcome, Home, Demo playground | Guidelines final; bottle + lunchbox scripts | Pre‑compliance plan; lab RFQs; certified cell shortlist | Trademark search and name decision; domain; CM long‑list | **G0** definition frozen (PRD, design, protocol) |
-| **Nov 2026** | Schematic + layout rev A; ID surface model; cradle‑ring mount system CAD; speaker chamber simulation | 0.3: sensors on P0, first detection algorithms, audio pipeline, power modes | 0.7: wizard end‑to‑end over Web Bluetooth with P0; Tag detail, Kids, Settings, Privacy Center | Backpack, toothbrush, generic scripts; child‑development review; voice casting | Cell chosen (IEC 62133‑2 + UN38.3 docs); optional EMC pre‑scan on rev A | Brand identity; packaging concepts; CM short‑list visits | |
-| **Dec 2026** | **EVT build**: 30 units, rev A PCBA, SLA housings, hand‑cast silicone; power, acoustics, sensor, RF, thermal tests on real bottles/bags/brushes | 0.5: full event set, quiet hours, mute, battery/LED states, buffer | 0.9 beta: feature complete; closed beta with 10 supervised families on EVT units | Studio week: EN, 3 voices; mastering; pack build | Acoustic pre‑test (SPL cap) | Photography plan; pre‑order page design | |
+| **Oct 2026** | EE hired; architecture and part selection; ID concepts → 1 direction; P0 rig (nRF52840‑DK + sensor breakouts + MAX98357A + speaker) | 0.1: GATT v1 against the app's `codec.ts` reference and its simulated device; config/event round trip on the DK | 0.5: **first real pairing** — the shipped wizard against the P0 rig; connection state (H‑05); chooser filter on the pairing flag (AT‑1.1a); zero‑network CI test | Guidelines final; **scripts already written** — content review pass and casting brief | Pre‑compliance plan; lab RFQs; certified cell shortlist | Trademark search and name decision; domain; CM long‑list | **G0** definition frozen (PRD, design, protocol) |
+| **Nov 2026** | Schematic + layout rev A; ID surface model; cradle‑ring mount system CAD; speaker chamber simulation | 0.3: sensors on P0, first detection algorithms, audio pipeline, power modes | 0.7: tag‑voice preview (AT‑4.4/6.6), Attached‑to + For rows, mute over the wire, config read‑back and retry, `setTime` on connect, buffered‑frame timestamps | Child‑development review of the 2,052 lines; voice casting; patch list for anything the review rejects | Cell chosen (IEC 62133‑2 + UN38.3 docs); optional EMC pre‑scan on rev A | Brand identity; packaging concepts; CM short‑list visits | |
+| **Dec 2026** | **EVT build**: 30 units, rev A PCBA, SLA housings, hand‑cast silicone; power, acoustics, sensor, RF, thermal tests on real bottles/bags/brushes | 0.5: full event set, quiet hours, mute, battery/LED states, buffer | 0.9 beta: DFU flow, factory reset on Forget, band fan‑out, About legal/support content — the whole §5.9 P0 list closed; closed beta with 10 supervised families on EVT units | Studio week: EN, 3 voices; mastering; pack build | Acoustic pre‑test (SPL cap) | Photography plan; pre‑order page design | |
 | **Jan 2027** | **G1 EVT exit**; rev B (antenna, electrode, sealing); soft‑tool kickoff (4–6 wks); DFM with CM; rev B PCBAs built pre‑CNY | 0.8: feature complete; signed DFU; time‑unknown policy; factory test mode | 1.0 RC: DFU flow, a11y audit, perf budgets, Playwright screenshots | Fixes from beta; sound effects final | Formal test slots booked (RF, toy safety); IP67 method agreed | CM contract; usability round 1 (setup time) | **G1** |
 | **Feb 2027** | **DVT build** (late Feb, post‑CNY): 250 units, soft tools, production materials and colours (CMF lock); reliability starts (drop, IP67, thermal, button, strap, battery cycle) | 0.9: tuning on DVT; power measurements → budget report | 1.0 RC2; iOS Capacitor spike (1.1 track) | Pack v1.0 frozen | RF testing starts (FCC/IC/CE‑RED/UKCA); toy safety samples submitted (ASTM/EN 71/CPSIA); RoHS/REACH declarations | Packaging DVT samples; Amazon brand registry; support help‑centre drafts | |
 | **Mar 2027** | Reliability complete; **in‑home study** (30 families, 2 weeks, DVT units labelled not‑for‑sale); hard‑tool kickoff (6–8 wks) | 1.0.0‑rc signed | **1.0.0 public PWA** at pre‑order open (Demo mode for everyone; pairing for study units) | Patch recording for flagged lines | RF reports → TCB filing; SIG Declaration ID; IP67 report; toy safety results begin | **Pre‑orders open**; press embargo briefings; creator seeding list | |
@@ -125,9 +138,10 @@ Planning estimates; labs confirm at booking. "Start" assumes DVT units with fina
 
 | Version | Date | Channel | Contents |
 |---|---|---|---|
-| 0.5 | Oct 2026 | Internal | Design system, Welcome, Home, Demo playground |
-| 0.7 | Nov 2026 | Internal | Wizard, Tag detail, Kids, Settings, Privacy Center; Web Bluetooth with P0 |
-| 0.9 beta | Dec 2026 | Closed (10 families, EVT, supervised) | Feature complete |
+| **0.1.0** | **Sep 2026 (exists)** | Internal | All screens, both transports, content engine, offline install, tests and screenshots (PRD §5.9) |
+| 0.5 | Oct 2026 | Internal | First pairing against the P0 rig; connection state; pairing‑flag chooser filter; zero‑network CI test |
+| 0.7 | Nov 2026 | Internal | Tag‑voice preview; Attached‑to / For; mute over the wire; config read‑back + retry; time and buffer handling |
+| 0.9 beta | Dec 2026 | Closed (10 families, EVT, supervised) | §5.9 P0 list closed: DFU, factory reset, band fan‑out, legal/support content. Feature complete |
 | 1.0 RC / RC2 | Jan–Feb 2027 | Closed | DFU, a11y, performance, screenshots |
 | 1.0.0 | Mar 2027 | **Public PWA** at pre‑order open | Demo mode public; pairing for study units |
 | 1.0.x | Apr–May 2027 | Public | Fixes from in‑home study |
@@ -141,7 +155,9 @@ Firmware ships in lock‑step: 1.0.0 (factory, Apr 2027), 1.1.0 (DFU, Jul 2027),
 
 EE hire → rev A → **EVT exit (G1)** → soft tools → **DVT** (post‑CNY) → certification on DVT → grants/DoCs → **PVT** on hard tools → **G3** → launch.
 
-Items not on the critical path but with long lead: voice recording (book studio by Nov), trademark (box artwork lock in Mar), CM contract (Jan), Indian approvals (v1.1), Apple developer/category decision (Feb).
+**The app is not on the critical path and should not be scheduled as if it were.** Its remaining P0 work is all firmware‑dependent (PRD §5.9), so it tracks firmware maturity rather than its own calendar; an app team idle in October is a signal to pull the EE hire forward, not to add app scope.
+
+Items not on the critical path but with long lead: voice recording (book studio by Nov — scripts are already written), trademark (box artwork lock in Mar), CM contract (Jan), Indian approvals (v1.1), Apple developer/category decision (Feb), ICU externalisation and pack code‑splitting (start of the 1.1 track).
 
 ## 8. Risks and mitigations
 
@@ -158,13 +174,16 @@ Items not on the critical path but with long lead: voice recording (book studio 
 | Trademark conflict on "Tagalong" | Medium | Rebrand before artwork lock | Search in Oct; alternates ready (Blip, Pipsy, Chatterbug); artwork lock in Mar |
 | Content tone misses a band (e.g., `big` finds it babyish) | Medium | Reviews from the 8–12 segment | Kid panels per band at script stage; beta feedback loop; patch pack via PackXfer at 1.1 |
 | BOM > $12 at 10k | Medium | Margin | Cost roll‑up at every gate; module vs. chip trade; single‑colour silicone masters |
-| Founder bandwidth (single approver) | High | Gate delays | Gates need one decision each; open questions are batched per gate |
+| Founder bandwidth (single approver) | High | Gate delays | Gates need one decision each; open questions are batched per gate (PRD §14 has eight waiting on G0/G1) |
+| EE hire slips past mid‑Oct 2026 | Medium | **Slips everything**; the app cannot absorb the delay because its remaining work needs firmware | Two parallel routes from week 1: a contract EE through the CM and an independent design house; decide by 15 Oct with whoever can start soonest |
+| Preview voices resolve to cloud TTS on some Android builds | Medium | Undermines the zero‑network claim, which is the whole positioning | Filter to `localService` voices and disclose the fallback (PRD §14 Q6) — decide at G0, before any press briefing |
+| Docs and code drift apart again | Medium | The PRD stops being trustworthy and gates get argued instead of checked | PRD §5.9 is the one reality table; it is reviewed at every gate and no gate passes with it stale |
 
 ## 9. Decision gates
 
 | Gate | When | Criteria | Founder decisions due |
 |---|---|---|---|
-| **G0** Definition | Oct 2026 | PRD, design spec, protocol v1, ADRs accepted; content guidelines final | Name/trademark; age‑grade target (2+ vs 3+); PWA‑before‑hardware |
+| **G0** Definition | Oct 2026 | PRD, design spec, protocol v1, ADRs accepted; content guidelines final; PRD §5.9 P0/P1 split agreed | Name/trademark; age‑grade target (2+ vs 3+); PWA‑before‑hardware; preview‑voice policy and `connect-src` (PRD §14 Q6–Q7); lunchbox mounting story (Q8) |
 | **G1** EVT exit | Jan 2027 | §4 EVT criteria; BOM roll‑up ≤ $12 path; risks reviewed | Module vs. chip; bottle‑material claim wording; CM choice |
 | **G2** DVT exit | Apr 2027 | §4 DVT criteria; certification underway without redesign; study metrics met; packaging final | Launch date confirmation; App Store category; MP quantity |
 | **G3** Launch readiness | May 2027 | `01-prd.md` §12 complete; certificates on file; PVT yield ≥ 97 %; support live | Go/no‑go |
@@ -180,3 +199,5 @@ Items not on the critical path but with long lead: voice recording (book studio 
 5. Bluetooth qualification uses the combination route with Nordic's pre‑qualified controller and the Zephyr host stack.
 6. Voice recording uses human voice actors (three personalities) for EN; ES/HI may use high‑quality neural TTS with native‑speaker direction if studio budget is constrained (ADR‑003 allows both).
 7. No telemetry exists, so every "exit criterion" measured on users comes from moderated sessions, support tickets, reviews and returns data.
+8. The app team is one to two engineers. The plan assumes they spend October and November on firmware integration (PRD §5.9) rather than new surface area, and that no new screen is added before G2.
+9. Content scripts are complete and frozen at G0. The December studio week records what exists; anything the child‑development review rejects in November is patched in the same week, not after.

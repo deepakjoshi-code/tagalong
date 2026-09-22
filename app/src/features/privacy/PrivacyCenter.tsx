@@ -22,6 +22,7 @@ export function PrivacyCenter() {
   }, [])
 
   const atEvictionRisk = persisted === false && isIosSafari() && !isStandalone()
+  const storageError = useStore((st) => st.storageError)
 
   const exportAll = () => {
     downloadJson('tagalong-data.json', buildExport(state))
@@ -64,6 +65,18 @@ export function PrivacyCenter() {
         <ListRow title="Analytics or crash reports" value="Never" />
         <ListRow title="Third-party services" value="None" />
       </ListGroup>
+
+      {storageError && (
+        <Card flat>
+          <strong style={{ font: 'var(--text-headline)', color: 'var(--danger)' }}>
+            This device isn’t saving your settings
+          </strong>
+          <p style={{ font: 'var(--text-footnote)', color: 'var(--text-2)', marginTop: 8 }}>
+            Tagalong couldn’t open storage on this browser, so anything you set up will be lost when you close
+            the app. Private browsing and blocked site data are the usual causes.
+          </p>
+        </Card>
+      )}
 
       <ListGroup
         header="Keeping your data safe"

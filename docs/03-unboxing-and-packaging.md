@@ -3,7 +3,8 @@
 | | |
 |---|---|
 | **Status** | Design brief for packaging · 2026‑09‑22 |
-| **Derives from** | `docs/00-product-brief.md` §3 (principles 1, 2, 8), §5.1 (mounts, pricing), `docs/01-prd.md` §4.1, §6.1 (ship mode), §6.8 (button) |
+| **Derives from** | `docs/00-product-brief.md` §3 (principles 1, 2, 8), §5.1 (mounts, pricing), `docs/01-prd.md` §4.1, §5.9 (what the app actually does), §6.1 (ship mode), §6.7 (LED), §6.8 (button) |
+| **Consistent with** | `docs/research/market-research.md` §4 (privacy as a purchase blocker, grandparent gifting), §9 (noise objection) |
 | **Owner** | Design (structure and copy), Compliance (marks and warnings), Ops (print and logistics) |
 
 ## 1. Principles
@@ -11,10 +12,11 @@
 1. **The box is the first screen.** One hero, face‑up, alone: the tag. No cable in sight until it is needed.
 2. **First giggle in ≤ 20 seconds from sleeve‑off.** No tools, no manual, no plastic to fight.
 3. **Paper only.** FSC‑certified board and moulded pulp, soy inks, no plastic window, no ties, no poly bags. Cards travel in a paper sleeve.
-4. **Privacy on the face, not in the fine print.** "No microphone. No camera. No account." is printed where a gift buyer sees it in a store.
-5. **Every word passes the app's copy rules.** Sentence case, verbs first, no jargon, no shame.
-6. **Nothing in the box may be a small part** for the under‑3 test (see §8 and the open question on age grading).
-7. **One artwork for all launch markets** (US/UK/CA/AU), with EN/FR mandatory information so Canada needs no separate SKU.
+4. **Privacy on the face, not in the fine print.** "No microphone. No camera. No account." is printed where a gift buyer sees it in a store. More than 8 in 10 parents say they worry about connected toys collecting children's data (market research §4), so this is the purchase argument, not a reassurance.
+5. **Every word passes the app's copy rules.** Sentence case, verbs first, no jargon, no shame. Where the box tells a parent to tap something, it uses the app's exact label.
+6. **The box answers the noise objection before a teacher does.** Quiet hours, one‑tap mute and the 75 dB cap are named on the sleeve, not buried in the leaflet (market research §9 risk 2).
+7. **Nothing in the box may be a small part** for the under‑3 test (see §8 and the open question on age grading).
+8. **One artwork for all launch markets** (US/UK/CA/AU), with EN/FR mandatory information so Canada needs no separate SKU.
 
 ## 2. SKUs and box contents
 
@@ -41,13 +43,13 @@ Packaging cost target (1‑pack, all printed matter, structure and pulp, excludi
 
 | Layer | What it is | Notes |
 |---|---|---|
-| Sleeve | 350 gsm FSC folding boxboard, matte aqueous coat, spot UV on the wordmark | Face: wordmark, "Give anything a voice.", the bottle ThingIcon with a face, a colour dot. Left side: *No microphone. No camera. No account.* Right side: what it reacts to (filled · dropped · picked up). Back: contents, 3‑step overview, compatibility, regulatory panel (§7), barcode |
+| Sleeve | 350 gsm FSC folding boxboard, matte aqueous coat, spot UV on the wordmark | Face: wordmark, "Give anything a voice.", the bottle ThingIcon with a face, a colour dot. Left side: *No microphone. No camera. No account.* Right side: what it reacts to (filled · dropped · picked up), plus **"Classroom‑quiet: quiet hours, one‑tap mute, 75 dB cap."** Back: contents, 3‑step overview, compatibility, regulatory panel (§7), barcode |
 | Lid | 1,200 gsm greyboard wrapped in 120 gsm uncoated paper in the tag's colour | Inner lid liner printed with a die‑cut speech bubble: **"Press my button!"** aligned to the tag beneath |
 | Upper cradle | Moulded pulp, natural finish, 38 mm well with a finger notch | Tag sits face‑up, button up, loop tucked; the quick‑start card lies in a recess **under the tag** so lifting the tag reveals it |
 | Pull tab | Paper tab printed "There's more" | Lifts the cradle out |
 | Lower tray | Moulded pulp | Charger puck in a well with the cable coiled around it; bottle strap and zipper loop rolled in two wells; paper sleeve with privacy card and safety leaflet on the side |
 
-**2‑pack — 170 × 100 × 44 mm**, same system with two wells side by side, both quick‑start cards under the tags, two chargers below.
+**2‑pack — 170 × 100 × 44 mm**, same system with two wells side by side, the single quick‑start card under the left tag, two chargers below. One card is right: setup happens once per phone, and both tags are added from the same app.
 
 **Mount kit — 100 × 100 × 30 mm folding carton** with a hang tab; window‑free; contents printed as icons on the face.
 
@@ -67,27 +69,29 @@ Target ≤ 20 s to the first giggle; ≤ 60 s to the phone opening the app.
 | 6 | Charger puck, straps, paper sleeve | Puts the tag on the puck; scans the QR | Magnetic snap; amber breathing LED | Charging starts without a decision | 40 s |
 | 7 | Phone: the app opens to Welcome | Taps **Get started** | — | Setup begins; the card said what to do | 60 s |
 
-Notes: the tag is shipped in ship mode so nothing giggles in a warehouse or a gift bag; the first press is the wake. If the kid is not present, the parent gets the same moment. The charger can pair while charging, so step 6 never blocks step 7.
+Notes: the tag is shipped in ship mode so nothing giggles in a warehouse or a gift bag; the first press is the wake. If the kid is not present, the parent gets the same moment. A tag on the charger still pairs and still takes its settings, so step 6 never blocks step 7 — and because the box ships at ~50 % charge, a parent who ignores the charger entirely can complete setup and use the tag the same day.
+
+**What the sequence is protecting.** Steps 3 and 4 exist because the gift buyer is usually not the person who sets the tag up (86 % of US grandparents buy gifts — market research §4). The kid's first press has to work with no phone, no app and no adult decision; the card has to be found by whoever eventually opens the box. Everything in §3's structure serves that one ordering.
 
 ## 5. Quick‑start card
 
-95 × 95 mm, 350 gsm uncoated, rounded corners (8 mm), printed in the tag colour and ink black. Front carries all copy (58 words); back carries only the QR code, the short URL and the wordmark. The LED and button legend lives on the safety leaflet and in the app (About), so the card stays under 60 words.
+95 × 95 mm, 350 gsm uncoated, rounded corners (8 mm), printed in the tag colour and ink black. Front carries all copy; back carries only the QR code, the short URL and the wordmark. The LED and button legend lives on the safety leaflet and in the app (About), so the card stays inside its word budget.
 
-**Front copy (58 words):**
+**Front copy — 59 words, counting the step numerals:**
 
 > **Hi! I'm Tagalong.**
 >
-> 1. Press my button to wake me up.
-> 2. Charge me on the magnetic puck until my light turns green.
-> 3. Scan the code with a grown‑up's phone and tap Add a tag.
-> 4. Hold my button until I giggle, then follow along.
+> 1. Press my button to wake me.
+> 2. Charge me on the puck until the light turns green.
+> 3. A grown‑up scans the code and taps Add a tag.
+> 4. Hold my button until I giggle, then tap Search.
 > 5. Strap me to a bottle, bag or brush. Let's go!
 >
 > No account. Nothing leaves your phone.
 
-**Back:** QR code → `{APP_URL}/start?src=box` (static route; no tracking parameters beyond the source word, which the app ignores). Below it the URL in text for phones that cannot scan, and the wordmark.
+**Back:** QR code → `{APP_URL}/?src=box`. The app has no `/start` route and ignores unknown query parameters; any unknown path redirects to the app root, so the code cannot lead to a dead page even if the URL scheme changes later. There are no tracking parameters of any kind — the app has nothing to send them to. Below the code sits the URL in text for phones that cannot scan, and the wordmark.
 
-Copy rules applied: first person (the tag speaks, as it does on the box lid); each step one verb; "grown‑up's phone" tells kids this part is not theirs; step 2 matches the LED spec (dim green when charged); step 4 matches the pairing behaviour (hold 3 s → giggle).
+Copy rules applied: first person (the tag speaks, as it does on the box lid); each step one verb; "a grown‑up" tells kids this part is not theirs; step 2 matches the LED spec (dim green solid when charged, PRD TAG‑LED‑11); steps 3 and 4 use the app's own words — the `+` button is labelled **Add a tag** and the wizard's button is **Search** — so the card and the screen never disagree.
 
 ## 6. In‑box privacy card
 
@@ -97,15 +101,20 @@ Copy rules applied: first person (the tag speaks, as it does on the box lid); ea
 >
 > Tagalong has no microphone, no camera and no location. It cannot hear, see or track anything. It reacts to motion, touch, light and time — nothing else.
 >
-> **What lives on your phone, and only there:** the first name you type (optional), your child's age group, the things you tagged, sound settings, and a seven‑day list of what each tag noticed. There is no account, no cloud and no analytics. We can't see any of it — literally.
+> **What lives on your phone, and only there:** the first name you type (optional), your child's age group, the things you tagged, sound settings, a seven‑day list of what each tag noticed, and — only if you record one — a one‑second clip of your child's name. There is no account, no cloud and no analytics. We can't see any of it — literally.
 >
-> **What lives on the tag:** its settings and, only if you record one, a one‑second clip of your child's name.
+> **What lives on the tag:** its settings. Age group, what it's attached to, personality, volume and quiet hours. Never a name, never a place.
 >
-> **You are in control.** Settings → Privacy Center shows everything stored, exports it, or deletes it in one tap. To wipe a tag: put it on the charger and hold its button for 10 seconds until the light blinks red.
+> **You are in control.** Settings → Privacy Center lists everything stored, saves a copy as a file, or deletes all of it. To wipe a tag: put it on the charger and hold its button for 10 seconds until the light blinks red.
 >
 > Full privacy notice: in the app under About. Questions: `{PRIVACY_EMAIL}`
 
-Legal adds one line at the foot in smaller type after review: a COPPA/GDPR‑K statement that Tagalong collects no personal information from children and that no personal information is transmitted to the manufacturer. Copy must remain true to ADR‑002 word for word; if a future feature changes this, the card changes first.
+Two things this card must not say, because they are not true at v1.0:
+
+1. **The name clip is not on the tag.** It is recorded and kept on the phone; splicing it into the tag's speech arrives in the 1.1 update (PRD TAG‑NC‑01, A‑02). The card therefore lists the clip under the phone, and the app's own footer needs the same correction before launch (PRD K‑04, a P0 copy fix).
+2. **The export does not include the recording.** It is a JSON file of kids, tags, settings and activity; audio is excluded (PRD PC‑03). "Saves a copy as a file" is accurate without over‑claiming, and the file says so in its own text.
+
+Legal adds one line at the foot in smaller type after review: a COPPA/GDPR‑K statement that Tagalong collects no personal information from children and that no personal information is transmitted to the manufacturer. Copy must remain true to ADR‑002 word for word; if a future feature changes this, the card changes first. Full COPPA compliance was due 22 Apr 2026 and the EU RED cyber requirements have been mandatory since 1 Aug 2025 (market research §7), so this card is reviewed by counsel, not by design alone.
 
 ## 7. Safety & regulatory leaflet (content owned by Compliance)
 
@@ -134,6 +143,8 @@ The box back panel repeats the age grade, mandatory warnings, marks, barcode (GS
 | Zipper loop | Backpack zipper pulls, lunchbox handles, pram/stroller | Ring + silicone lanyard, closed loop perimeter ≤ 60 mm (too small to pass over a head) | Hold ≥ 3 kg | 1‑ and 2‑pack; kit | Passes |
 | Lace clip | Shoes, straps, jackets | Ring + stainless spring clip in a silicone over‑mould; jaw opening 8 mm; no exposed sharp edges | Hold ≥ 2 kg; clip 10k cycles | Kit | Passes: rigid, ≥ 35 mm in two axes |
 | Adhesive base | Lunchbox lid interior, helmet, bike frame, piggy bank (v1.2) | Ring on a rigid ⌀42 mm disc with pre‑applied 3M VHB pad; removable with a heat‑gun‑free "twist and floss" method described in the leaflet | Hold ≥ 3 kg shear after 72 h cure | Kit (2 bases; no loose spare pads) | Passes: rigid disc; pad not separable without tools |
+
+**Unresolved: how a lunchbox is actually mounted.** The app tells parents "Stick it inside the lid, near the latch", which needs an adhesive base — and the adhesive base ships only in the Mount kit, while the PRD assumes lid‑handle strap detection so that no adhesive is needed in the box (PRD A‑15, §14 Q8). Three ways out: ship an adhesive base in the 1‑pack (cost and a cleaning question), change the app's hint to the strap (free, if EVT proves strap detection), or sell lunchbox owners the kit (worst — it makes a hero thing feel incomplete). Decide at EVT in December, then make the app hint, this table and the leaflet say the same thing.
 | Charger puck | Charging | ⌀42 × 9 mm ABS, encapsulated magnets, 2 gold‑plated pogo pins, captive cable | Magnet flux index below the ASTM F963 hazardous‑magnet threshold, verified at DVT | 1 per tag | Passes: exceeds cylinder; magnets not liberable |
 
 Rules for any future mount: rigid ring always present; no loose pads, screws or caps; no cord with a loop perimeter > 60 mm; every mount tested attached through the 1.5 m drop protocol.
@@ -164,5 +175,8 @@ Rules for any future mount: rigid ring always present; no loose pads, screws or 
 2. Age grade 2+ is the target; 3+ is the fallback (§8). Founder decision at G0 after the December lab pre‑check.
 3. No wall adapter is included; a 5 V USB source is assumed in every home. The leaflet says "certified 5 V USB source".
 4. Canada bilingual requirements are met with EN/FR mandatory information on the box back and the leaflet; the app UI remains English in v1.0.
-5. The 2‑pack ships two chargers so each tag has "a home"; the cost delta (~$1.50) is accepted for the experience.
+5. The 2‑pack ships two chargers so each tag has "a home"; the cost delta (~$1.50) is accepted for the experience. It ships one quick‑start card and one privacy card, because setup is per phone.
 6. Fill‑sensing wording on the box ("It knows when it's filled") is finalised after the EVT bottle‑material test (roadmap §8); if cap‑sense proves unreliable on metal bottles, the sleeve copy narrows to "on plastic bottles" and the app says the same.
+7. **Printed copy is locked to the app's copy, not the reverse.** The card names **Add a tag** and **Search** because those are the shipped labels; if a label changes, the artwork changes with it. Artwork proofs are checked against the running app at DVT (Feb 2027), not against this document.
+8. Two claims on the privacy card depend on P0 app work landing first — the name‑clip location and what the export contains (§6). If either slips, the card changes, not the truth.
+9. Mount placement copy depends on the EVT sensor results (§8) and is the last thing in this document to lock.

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mem = new Map<string, unknown>()
+// vi.mock is hoisted above module scope, so the backing map must be hoisted too.
+const { mem } = vi.hoisted(() => ({ mem: new Map<string, unknown>() }))
 vi.mock('idb-keyval', () => ({
   get: async (k: string) => mem.get(k),
   set: async (k: string, v: unknown) => void mem.set(k, v),

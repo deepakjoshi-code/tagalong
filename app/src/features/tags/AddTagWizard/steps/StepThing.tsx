@@ -23,7 +23,12 @@ export function StepThing({ draft, patch, next }: StepProps) {
             aria-pressed={draft.thing === thing}
             onClick={() => {
               haptics.select()
-              patch({ thing, nickname: suggestNickname(thing, draft.personality) })
+              // Only re-suggest while the nickname is still a suggestion; never
+              // overwrite a name the parent typed on a later step.
+              const untouched = THING_TYPES.some((t) =>
+                THING_META[t].nicknames.includes(draft.nickname.trim()),
+              )
+              patch(untouched ? { thing, nickname: suggestNickname(thing, draft.personality) } : { thing })
             }}
           >
             <ThingIcon thing={thing} size={56} mood={draft.thing === thing ? 'happy' : null} />

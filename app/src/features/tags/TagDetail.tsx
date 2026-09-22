@@ -25,7 +25,7 @@ import { THING_META } from '@/domain/things'
 import { DEFAULT_SETTINGS, PERSONALITIES, type Personality } from '@/domain/types'
 import { haptics } from '@/lib/haptics'
 import { SPEECH_UNAVAILABLE_COPY, canSpeak, speak, speechUnavailableReason } from '@/lib/speech'
-import { formatMinutesOfDay, formatTime } from '@/lib/time'
+import { QUIET_STEP_MINUTES, formatMinutesOfDay, formatTime, snapToQuietStep } from '@/lib/time'
 import { describeTransportError } from '@/transport'
 import { connectTag, disconnectTag, syncTagConfig } from '@/transport/manager'
 import s from './TagDetail.module.css'
@@ -34,7 +34,7 @@ const timeValue = (min: number) =>
   `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
 const parseTime = (v: string) => {
   const [h = '0', m = '0'] = v.split(':')
-  return Number(h) * 60 + Number(m)
+  return snapToQuietStep(Number(h) * 60 + Number(m))
 }
 
 export function TagDetail() {
@@ -218,6 +218,7 @@ export function TagDetail() {
               trailing={
                 <input
                   type="time"
+                  step={QUIET_STEP_MINUTES * 60}
                   className={s.timeInput}
                   aria-label="Quiet hours start"
                   value={timeValue(tag.quiet.startMin)}
@@ -231,6 +232,7 @@ export function TagDetail() {
               trailing={
                 <input
                   type="time"
+                  step={QUIET_STEP_MINUTES * 60}
                   className={s.timeInput}
                   aria-label="Quiet hours end"
                   value={timeValue(tag.quiet.endMin)}
