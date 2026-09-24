@@ -92,7 +92,7 @@ Two-packs ship Pebble + Tangerine so siblings can tell theirs apart at a glance 
 
 ## 8. Charging puck
 
-A ⌀30 × 8 mm disc on a 1 m braided USB‑C cable. Two spring pogo pins and a pair of N42 magnets (**0.8 N pull**, deliberately weak — it should release rather than drag a bottle off a table). The tag lands on it one way only, because the magnets are polarised to reject the wrong orientation. A single white LED on the puck, not on the tag, so a charging tag in a bedroom stays dark.
+A **⌀42 × 9 mm** disc on a captive 1 m braided USB‑C cable. The diameter is set by child safety, not styling: the small‑parts test cylinder (16 CFR 1501 / EN 71‑1) has a ⌀31.7 mm bore, so anything under that fits inside it and becomes a choking hazard for the under‑threes who share a house with our users. A ⌀30 mm puck would fail; ⌀42 mm clears the cylinder with margin and matches the cradle ring, so the whole accessory family is one diameter. This must stay in step with `docs/03-unboxing-and-packaging.md`. Two spring pogo pins and a pair of N42 magnets (**0.8 N pull**, deliberately weak — it should release rather than drag a bottle off a table). The tag lands on it one way only, because the magnets are polarised to reject the wrong orientation. A single white LED on the puck, not on the tag, so a charging tag in a bedroom stays dark.
 
 ## 9. What we deliberately did not do
 - **No coin cell**, so no battery door, no screws, no ingestion hazard (ADR‑005).
