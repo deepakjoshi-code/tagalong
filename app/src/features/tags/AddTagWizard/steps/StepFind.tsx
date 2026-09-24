@@ -13,6 +13,9 @@ export interface StepProps {
   next: () => void
 }
 
+const NO_BLUETOOTH_COPY =
+  'This browser cannot reach a real tag. Use Chrome on Android, or choose a demo tag below.'
+
 export function StepFind({ draft, patch, next }: StepProps) {
   const demoMode = useStore((st) => st.settings.demoMode)
   const updateSettings = useStore((st) => st.updateSettings)
@@ -20,10 +23,19 @@ export function StepFind({ draft, patch, next }: StepProps) {
   const supported = isWebBluetoothSupported()
 
   const search = async (forceDemo = false) => {
+    const demoWanted = forceDemo || useStore.getState().settings.demoMode
+    const { transport, reason } = getTransport({ demoMode: demoWanted })
+
+    // Without Web Bluetooth the transport silently falls back to a pretend tag.
+    // Creating one must always be a deliberate choice, never the result of
+    // tapping Search and being told setup succeeded.
+    if (reason === 'unsupported' && !demoWanted) {
+      toast.error(NO_BLUETOOTH_COPY)
+      return
+    }
+
     setSearching(true)
     try {
-      // Read demo mode at call time: "use a demo tag" flips it immediately before searching.
-      const { transport, reason } = getTransport({ demoMode: forceDemo || useStore.getState().settings.demoMode })
       const found = await transport.requestTag()
       haptics.success()
       patch({ deviceId: found.deviceId, deviceName: found.name, simulated: reason !== 'bluetooth' })
@@ -73,7 +85,14 @@ export function StepFind({ draft, patch, next }: StepProps) {
       </div>
 
       <div className={s.footer}>
-        <Button size="lg" block loading={searching} onClick={() => void search(false)} leading={<Bluetooth size={20} />}>
+        <Button
+          size="lg"
+          block
+          loading={searching}
+          disabled={!supported && !demoMode}
+          onClick={() => void search(false)}
+          leading={<Bluetooth size={20} />}
+        >
           {demoMode ? 'Create a demo tag' : 'Search'}
         </Button>
         {!demoMode && (

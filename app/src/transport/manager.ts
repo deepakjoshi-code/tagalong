@@ -1,6 +1,6 @@
 import { useStore } from '@/domain/store'
 import { DEFAULT_SCHOOL_HOURS, type Kid, type Tag } from '@/domain/types'
-import { nowMinutesOfDay } from '@/lib/time'
+import { mondayFirstDayOfWeek, nowMinutesOfDay } from '@/lib/time'
 import { formatFirmware } from './codec'
 import { transportForDevice } from './index'
 import type { TagConfig, TagConnection, TagEventFrame } from './types'
@@ -87,7 +87,9 @@ export async function connectTag(tag: Tag): Promise<TagConnection> {
   attach(tag.id, conn)
 
   // The tag has no real-time clock, so hand it the time of day on every connection.
-  await conn.control({ op: 'setTime', minutes: nowMinutesOfDay() }).catch(() => undefined)
+  await conn
+    .control({ op: 'setTime', minutes: nowMinutesOfDay(), dayOfWeek: mondayFirstDayOfWeek() })
+    .catch(() => undefined)
 
   // Uptime going backwards means the tag rebooted and lost its settings, so push them again.
   const seen = lastUptime.get(tag.id)
@@ -121,7 +123,69 @@ export async function syncTagConfig(tagId: string): Promise<void> {
   if (!tag || !kid) return
   const conn = await connectTag(tag)
   await conn.writeConfig(buildTagConfig(tag, kid))
-  s.updateTag(tagId, { lastSyncAt: Date.now() })
+
+  // A mute the parent asked for while the tag was unreachable rides along now.
+  const pendingMute = useStore.getState().tags.find((t) => t.id === tagId)?.pendingMuteMinutes
+  if (pendingMute !== undefined) {
+    await conn.control({ op: 'mute', minutes: pendingMute })
+    useStore.getState().updateTag(tagId, { pendingMuteMinutes: undefined })
+  }
+
+  // Only a write the tag accepted clears the flag. Until then the app shows the
+  // parent's intent as pending, not as the tag's state.
+  useStore.getState().markTagSynced(tagId)
+}
+
+/**
+ * Mutes or unmutes on the tag itself, not just in the app.
+ *
+ * Mute is the parent's emergency stop. Recording it locally and telling them it
+ * worked, while the tag carries on talking, is the worst failure this app can
+ * have. If the tag is unreachable the request is queued and the caller is told.
+ */
+export async function muteTagOnDevice(tagId: string, minutes: number): Promise<void> {
+  const s = useStore.getState()
+  const tag = s.tags.find((t) => t.id === tagId)
+  if (!tag) return
+  try {
+    const conn = await connectTag(tag)
+    await conn.control({ op: 'mute', minutes })
+    useStore.getState().updateTag(tagId, {
+      mutedUntil: minutes > 0 ? Date.now() + minutes * 60_000 : undefined,
+      pendingMuteMinutes: undefined,
+    })
+  } catch (e) {
+    // Remember the intent so it is delivered the moment the tag is reachable,
+    // and let the caller tell the truth about what just happened.
+    useStore.getState().updateTag(tagId, { pendingMuteMinutes: minutes })
+    throw e
+  }
+}
+
+/** Sends a factory reset so the tag can be paired with another phone. */
+export async function factoryResetTag(tagId: string): Promise<void> {
+  const s = useStore.getState()
+  const tag = s.tags.find((t) => t.id === tagId)
+  if (!tag) return
+  const conn = await connectTag(tag)
+  await conn.control({ op: 'factoryReset' })
+}
+
+/** Re-pushes config to every tag belonging to a kid, e.g. after an age change. */
+export async function syncTagsForKid(kidId: string): Promise<{ ok: number; failed: number }> {
+  const tags = useStore.getState().tags.filter((t) => t.kidId === kidId)
+  let ok = 0
+  let failed = 0
+  for (const t of tags) {
+    try {
+      await syncTagConfig(t.id)
+      ok++
+    } catch {
+      useStore.getState().markTagDirty(t.id)
+      failed++
+    }
+  }
+  return { ok, failed }
 }
 
 export async function disconnectTag(tagId: string): Promise<void> {

@@ -18,6 +18,14 @@ export interface DayPickerProps {
   label: string
 }
 
+/**
+ * An empty mask is read as "every day" by both the app and the tag, so a parent
+ * who unticks the last day would get the exact opposite of what they chose.
+ * The last selected day cannot be removed; to mean "no school days" the parent
+ * turns the whole School hours switch off.
+ */
+const isLastSelectedDay = (mask: number, bit: number) => mask === 1 << bit
+
 export function DayPicker({ value, onChange, label }: DayPickerProps) {
   return (
     <div className={s.row} role="group" aria-label={label}>
@@ -30,6 +38,7 @@ export function DayPicker({ value, onChange, label }: DayPickerProps) {
             className={s.day}
             aria-pressed={on}
             aria-label={d.label}
+            disabled={on && isLastSelectedDay(value, i)}
             onClick={() => onChange(on ? value & ~(1 << i) : value | (1 << i))}
           >
             {d.short}

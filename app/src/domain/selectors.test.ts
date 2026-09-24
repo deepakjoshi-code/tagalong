@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isTagMuted, isWithinQuietHours, privacyInventory } from './selectors'
 import type { StoreData } from './store'
-import { DEFAULT_SETTINGS, type Tag } from './types'
+import { DEFAULT_SETTINGS, QuietHoursSchema, SchoolHoursSchema, type Tag } from './types'
 
 const tag = (over: Partial<Tag> = {}): Tag => ({
   id: 't1',
@@ -111,5 +111,28 @@ describe('school hours', () => {
 
   it('is absent on tags created before the feature existed', () => {
     expect(isWithinQuietHours(tag(), 12 * 60, 2)).toBe(false)
+  })
+})
+
+describe('a degenerate quiet window can never be stored', () => {
+  // The tag treats start == end as "always quiet", which would silently mute a
+  // family's tag. The schema is what stops it being created.
+  it('rejects quiet hours whose start equals its end', () => {
+    expect(QuietHoursSchema.safeParse({ enabled: true, startMin: 600, endMin: 600 }).success).toBe(false)
+    expect(QuietHoursSchema.safeParse({ enabled: true, startMin: 600, endMin: 610 }).success).toBe(true)
+    // Disabled windows are not meaningful, so they are allowed through.
+    expect(QuietHoursSchema.safeParse({ enabled: false, startMin: 0, endMin: 0 }).success).toBe(true)
+  })
+
+  it('rejects school hours whose start equals its end', () => {
+    const base = { enabled: true, startMin: 510, endMin: 510, days: 0b0011111 }
+    expect(SchoolHoursSchema.safeParse(base).success).toBe(false)
+    expect(SchoolHoursSchema.safeParse({ ...base, endMin: 930 }).success).toBe(true)
+  })
+
+  it('rejects an empty school-day mask, which both sides read as every day', () => {
+    const base = { enabled: true, startMin: 510, endMin: 930, days: 0 }
+    expect(SchoolHoursSchema.safeParse(base).success).toBe(false)
+    expect(SchoolHoursSchema.safeParse({ ...base, days: 1 }).success).toBe(true)
   })
 })

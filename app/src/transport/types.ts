@@ -43,7 +43,7 @@ export type ControlOp =
   | { op: 'identify' }
   | { op: 'preview'; event: TagEventType }
   | { op: 'mute'; minutes: number }
-  | { op: 'setTime'; minutes: number }
+  | { op: 'setTime'; minutes: number; dayOfWeek?: number }
   | { op: 'factoryReset' }
   | { op: 'enterDfu' }
 

@@ -73,12 +73,19 @@ export const KidSchema = z.object({
 })
 export type Kid = z.infer<typeof KidSchema>
 
-export const QuietHoursSchema = z.object({
-  enabled: z.boolean(),
-  /** minutes since midnight, local time */
-  startMin: z.number().int().min(0).max(1439),
-  endMin: z.number().int().min(0).max(1439),
-})
+export const QuietHoursSchema = z
+  .object({
+    enabled: z.boolean(),
+    /** minutes since midnight, local time */
+    startMin: z.number().int().min(0).max(1439),
+    endMin: z.number().int().min(0).max(1439),
+  })
+  // A window whose start equals its end cannot express a duration. The tag
+  // fails safe by treating it as "always quiet", which would silently mute a
+  // family's tag, so it must never be storable in the first place.
+  .refine((q) => !q.enabled || q.startMin !== q.endMin, {
+    message: 'Quiet hours must start and end at different times',
+  })
 export type QuietHours = z.infer<typeof QuietHoursSchema>
 
 /**
@@ -86,13 +93,22 @@ export type QuietHours = z.infer<typeof QuietHoursSchema>
  * parent can switch it off in the holidays, and so it can carry its own weekday
  * mask. A bottle that chats in a classroom gets the product banned, not returned.
  */
-export const SchoolHoursSchema = z.object({
-  enabled: z.boolean(),
-  startMin: z.number().int().min(0).max(1439),
-  endMin: z.number().int().min(0).max(1439),
-  /** bit0 = Monday … bit6 = Sunday. 0 means every day. */
-  days: z.number().int().min(0).max(127),
-})
+export const SchoolHoursSchema = z
+  .object({
+    enabled: z.boolean(),
+    startMin: z.number().int().min(0).max(1439),
+    endMin: z.number().int().min(0).max(1439),
+    /** bit0 = Monday … bit6 = Sunday. 0 means every day. */
+    days: z.number().int().min(0).max(127),
+  })
+  .refine((s) => !s.enabled || s.startMin !== s.endMin, {
+    message: 'School hours must start and end at different times',
+  })
+  // An empty mask reads as "every day" on both sides, which is the opposite of
+  // what a parent who just unticked the last day intended.
+  .refine((s) => !s.enabled || s.days !== 0, {
+    message: 'Pick at least one school day',
+  })
 export type SchoolHours = z.infer<typeof SchoolHoursSchema>
 
 export const WEEKDAYS_MASK = 0b0011111
@@ -122,7 +138,15 @@ export const TagSchema = z.object({
   nudges: z.boolean(),
   language: LanguageSchema,
   createdAt: z.number(),
+  /** When the tag last accepted a config write. Absent means it never has. */
   lastSyncAt: z.number().optional(),
+  /**
+   * True when the parent has changed settings that have not reached the tag.
+   * The store holds what the parent wants; this says whether the tag agrees.
+   */
+  pendingSync: z.boolean().optional(),
+  /** A mute the parent asked for that has not been delivered to the tag yet. */
+  pendingMuteMinutes: z.number().int().min(0).max(1440).optional(),
   info: TagInfoSchema.optional(),
   mutedUntil: z.number().optional(),
   simulated: z.boolean().optional(),

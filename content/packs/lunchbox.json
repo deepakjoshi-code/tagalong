@@ -5,121 +5,436 @@
   "events": {
     "opened": {
       "little": {
-        "silly": ["Ta-da! Lunch time!", "Pop! Look inside!", "Wheee! Open!", "Boing! Surprise!"],
-        "sweet": ["Lunch time, {{name}}!", "Ooh, look what's here.", "Yay! Time to eat.", "Open! Enjoy your lunch."],
-        "brave": ["Lunch mission! Go!", "Open! Fuel time!", "Ta-da! Power lunch!", "Ready! Eat up!"]
+        "silly": [
+          "Ta-da! Lunch time!",
+          "Pop! Look inside!",
+          "Wheee! Open!",
+          "Boing! Surprise!"
+        ],
+        "sweet": [
+          "Lunch time, {{name}}!",
+          "Ooh, look what's here.",
+          "Yay! Time to eat.",
+          "Open! Enjoy your lunch."
+        ],
+        "brave": [
+          "Lunch mission! Go!",
+          "Open! Fuel time!",
+          "Ta-da! Power lunch!",
+          "Ready! Eat up!"
+        ]
       },
       "kid": {
-        "silly": ["Ta-da! I've been guarding this all morning.", "Open sesame! Well, open lunchbox.", "Lunch is served, amigo!", "Drum roll please. It's lunch!"],
-        "sweet": ["Lunch time, {{name}}. Enjoy it.", "Here you go. Have a good break.", "Ooh, that looks nice.", "Lunch is ready. Take your time."],
-        "brave": ["Lunch mission, go! Refuel, captain!", "Open! Time to power up.", "Fuel stop! Let's do this.", "Lunch time. Earn that afternoon!"]
+        "silly": [
+          "Ta-da! I've been guarding this all morning.",
+          "Open sesame! Well, open lunchbox.",
+          "Lunch is served, amigo!",
+          "Drum roll please. It's lunch!"
+        ],
+        "sweet": [
+          "Lunch time, {{name}}. Enjoy it.",
+          "Here you go. Have a good break.",
+          "Ooh, lunch time already.",
+          "Lunch is ready. Take your time."
+        ],
+        "brave": [
+          "Lunch mission, go! Refuel, captain!",
+          "Open! Time to power up.",
+          "Fuel stop! Let's do this.",
+          "Lunch time. Earn that afternoon!"
+        ]
       },
       "big": {
-        "silly": ["Ta-da! I've been holding my breath since breakfast.", "Behold! The contents. Mysterious, I know.", "Lunch unlocked. You're welcome.", "Open. Please act surprised."],
-        "sweet": ["Lunch time, {{name}}. Hope it's a good one.", "Here you go. Enjoy your break.", "Open. Take a proper pause.", "Lunch is ready when you are."],
-        "brave": ["Refuel stop. Make it count.", "Lunch unlocked. Back to it after.", "Fuel up. Afternoon's waiting.", "Open. Recharge properly."]
+        "silly": [
+          "Ta-da! I've been holding my breath since breakfast.",
+          "Behold! The contents. Mysterious, I know.",
+          "Lunch unlocked. You're welcome.",
+          "Open. Please act surprised."
+        ],
+        "sweet": [
+          "Lunch time, {{name}}. Hope it's a good one.",
+          "Here you go. Enjoy your break.",
+          "Open. Take a proper pause.",
+          "Lunch is ready when you are."
+        ],
+        "brave": [
+          "Refuel stop. Make it count.",
+          "Lunch unlocked. Back to it after.",
+          "Fuel up. Afternoon's waiting.",
+          "Open. Recharge properly."
+        ]
       }
     },
     "closed": {
       "little": {
-        "silly": ["Click! All shut!", "Snap! Bye bye!", "Boop! Closed up!", "Shut! Nap time!"],
-        "sweet": ["All closed. Well done.", "Tidy! Thank you, {{name}}.", "Shut tight. Good job.", "Closed up. Nice."],
-        "brave": ["Sealed! Mission complete!", "Snap! Secure!", "Locked up! Safe!", "Closed! Ready to go!"]
+        "silly": [
+          "Click! All shut!",
+          "Snap! Bye bye!",
+          "Boop! Closed up!",
+          "Shut! Nap time!"
+        ],
+        "sweet": [
+          "All closed. Well done.",
+          "Tidy! Thank you, {{name}}.",
+          "Shut tight. Good job.",
+          "Closed up. Nice."
+        ],
+        "brave": [
+          "Sealed! Mission complete!",
+          "Snap! Secure!",
+          "Locked up! Safe!",
+          "Closed! Ready to go!"
+        ]
       },
       "kid": {
-        "silly": ["Snap! Back to my dark little life.", "Closed! See you tomorrow, sunlight.", "Click! Very satisfying, thank you.", "Shut tight. I'll guard the crumbs."],
-        "sweet": ["All closed up. Nicely done, {{name}}.", "Tidy! Thanks for closing me.", "Shut tight. See you later.", "Closed. Have a good afternoon."],
-        "brave": ["Sealed and secure, captain!", "Snap! Nothing escapes me.", "Locked down. Mission complete.", "Closed tight. Ready to move out."]
+        "silly": [
+          "Snap! Back to my dark little life.",
+          "Closed! See you tomorrow, sunlight.",
+          "Click! Very satisfying, thank you.",
+          "Shut tight. I'll guard the crumbs."
+        ],
+        "sweet": [
+          "All closed up. Nicely done, {{name}}.",
+          "Tidy! Thanks for closing me.",
+          "Shut tight. See you later.",
+          "Closed. Have a good afternoon."
+        ],
+        "brave": [
+          "Sealed and secure, captain!",
+          "Snap! Nothing escapes me.",
+          "Locked down. Mission complete.",
+          "Closed tight. Ready to move out."
+        ]
       },
       "big": {
-        "silly": ["Snap. Back to the void.", "Closed. My work here is done.", "Click. Deeply satisfying.", "Shut. I'll be here, dramatically."],
-        "sweet": ["All closed, {{name}}. Nicely done.", "Thanks for shutting me properly.", "Tidy. See you tomorrow.", "Closed up. Have a good one."],
-        "brave": ["Sealed. Nothing gets out.", "Closed and secure.", "Locked down. Let's move.", "Shut tight. Ready to roll."]
+        "silly": [
+          "Snap. Back to the void.",
+          "Closed. My work here is done.",
+          "Click. Deeply satisfying.",
+          "Shut. I'll be here, dramatically."
+        ],
+        "sweet": [
+          "All closed, {{name}}. Nicely done.",
+          "Thanks for shutting me properly.",
+          "Tidy. See you tomorrow.",
+          "Closed up. Have a good one."
+        ],
+        "brave": [
+          "Sealed. Nothing gets out.",
+          "Closed and secure.",
+          "Locked down. Let's move.",
+          "Shut tight. Ready to roll."
+        ]
       }
     },
     "packed": {
       "little": {
-        "silly": ["Ooh! Full of yummies!", "Boing! Packed up!", "Wheee! Lunch inside!", "Yum yum! All in!"],
-        "sweet": ["All packed, {{name}}.", "Ready for today. Yay!", "Full and ready.", "Packed up. Have fun!"],
-        "brave": ["Packed! Ready to go!", "Loaded up! Let's move!", "Fuel packed! Go go!", "Ready! Adventure lunch!"]
+        "silly": [
+          "Ooh! Full of yummies!",
+          "Boing! Packed up!",
+          "Wheee! Lunch inside!",
+          "Yum yum! All in!"
+        ],
+        "sweet": [
+          "All packed, {{name}}.",
+          "Ready for today. Yay!",
+          "Full and ready.",
+          "Packed up. Have fun!"
+        ],
+        "brave": [
+          "Packed! Ready to go!",
+          "Loaded up! Let's move!",
+          "Fuel packed! Go go!",
+          "Ready! Adventure lunch!"
+        ]
       },
       "kid": {
-        "silly": ["Packed! I feel important already.", "Loaded up. Do not shake me, amigo.", "Ooh, heavy! Someone's hungry.", "All in! I'm basically a treasure chest."],
-        "sweet": ["All packed, {{name}}. Have a great day.", "Ready for school. You've got this.", "Packed up with care.", "Good to go. Enjoy your day."],
-        "brave": ["Packed and ready, captain!", "Supplies loaded. Let's roll!", "Fuel secured. Onward!", "All in. Mission ready!"]
+        "silly": [
+          "Packed! I feel important already.",
+          "Loaded up. Do not shake me, amigo.",
+          "Ooh, heavy! Someone's hungry.",
+          "All in! I'm basically a treasure chest."
+        ],
+        "sweet": [
+          "All packed, {{name}}. Have a great day.",
+          "Ready for school. You've got this.",
+          "Packed up with care.",
+          "Good to go. Enjoy your day."
+        ],
+        "brave": [
+          "Packed and ready, captain!",
+          "Supplies loaded. Let's roll!",
+          "Fuel secured. Onward!",
+          "All in. Mission ready!"
+        ]
       },
       "big": {
-        "silly": ["Packed. I feel weirdly important.", "Loaded. Please don't turn me upside down.", "Ooh, heavy. Ambitious lunch today.", "All in. I'm a treasure chest now."],
-        "sweet": ["All packed, {{name}}. Have a good day.", "Ready to go. You've got this.", "Packed with care. Enjoy.", "Good to go whenever you are."],
-        "brave": ["Packed and ready. Let's move.", "Supplies loaded. Onward.", "Fuel secured. Day's waiting.", "All in. Mission ready."]
+        "silly": [
+          "Packed. I feel weirdly important.",
+          "Loaded. Please don't turn me upside down.",
+          "Ooh, heavy. Ambitious lunch today.",
+          "All in. I'm a treasure chest now."
+        ],
+        "sweet": [
+          "All packed, {{name}}. Have a good day.",
+          "Ready to go. You've got this.",
+          "Packed with care. Enjoy.",
+          "Good to go whenever you are."
+        ],
+        "brave": [
+          "Packed and ready. Let's move.",
+          "Supplies loaded. Onward.",
+          "Fuel secured. Day's waiting.",
+          "All in. Mission ready."
+        ]
       }
     },
     "pickup": {
       "little": {
-        "silly": ["Wheee! Up we go!", "Boing! Hello!", "Whoosh! Flying lunchbox!", "Hi! Carry me!"],
-        "sweet": ["Hi {{name}}! Ready?", "Yay! Off we go.", "Hello friend!", "You got me. Thanks!"],
-        "brave": ["Up! Let's go!", "Ready! Hold tight!", "Whoosh! March!", "Yes! Off we go!"]
+        "silly": [
+          "Wheee! Up we go!",
+          "Boing! Hello!",
+          "Whoosh! Flying lunchbox!",
+          "Hi! Carry me!"
+        ],
+        "sweet": [
+          "Hi {{name}}! Ready?",
+          "Yay! Off we go.",
+          "Hello friend!",
+          "You got me. Thanks!"
+        ],
+        "brave": [
+          "Up! Let's go!",
+          "Ready! Hold tight!",
+          "Whoosh! March!",
+          "Yes! Off we go!"
+        ]
       },
       "kid": {
-        "silly": ["Careful, amigo! Precious cargo!", "Up we go! Mind the sandwich.", "Hello! I come with snacks.", "Whoa, gentle. I'm full of lunch."],
-        "sweet": ["Hi {{name}}! Let's go have a good day.", "There you are. Ready when you are.", "Thanks for taking me along.", "Hello! Off we go together."],
-        "brave": ["Lunch supplies, moving out!", "Let's go, captain. I'm loaded.", "Ready to march. Lead the way!", "Onward! Fuel on board."]
+        "silly": [
+          "Careful, amigo! Precious cargo!",
+          "Up we go! Mind the sandwich.",
+          "Hello! I come with snacks.",
+          "Whoa, gentle. I'm full of lunch."
+        ],
+        "sweet": [
+          "Hi {{name}}! Let's go have a good day.",
+          "There you are. Ready when you are.",
+          "Thanks for taking me along.",
+          "Hello! Off we go together."
+        ],
+        "brave": [
+          "Lunch supplies, moving out!",
+          "Let's go, captain. I'm loaded.",
+          "Ready to march. Lead the way!",
+          "Onward! Fuel on board."
+        ]
       },
       "big": {
-        "silly": ["Careful, precious cargo aboard.", "Up we go. Mind the sandwich.", "Hello. I come bearing snacks.", "Gently! I'm structurally full."],
-        "sweet": ["Hey {{name}}. Let's have a good day.", "There you are. Ready to go.", "Thanks for taking me.", "Hello. Off we go."],
-        "brave": ["Supplies moving out.", "Let's go. I'm loaded and ready.", "Lead on. I'll keep up.", "Onward. Fuel's on board."]
+        "silly": [
+          "Careful, precious cargo aboard.",
+          "Up we go. Mind the sandwich.",
+          "Hello. I come bearing snacks.",
+          "Gently! I'm structurally full."
+        ],
+        "sweet": [
+          "Hey {{name}}. Let's have a good day.",
+          "There you are. Ready to go.",
+          "Thanks for taking me.",
+          "Hello. Off we go."
+        ],
+        "brave": [
+          "Supplies moving out.",
+          "Let's go. I'm loaded and ready.",
+          "Lead on. I'll keep up.",
+          "Onward. Fuel's on board."
+        ]
       }
     },
     "putdown": {
       "little": {
-        "silly": ["Plop! Landing!", "Boop! Down here!", "Oof! Heavy me!", "Wheee! Rest time!"],
-        "sweet": ["Okay. I'll wait here.", "See you soon!", "Resting. Bye bye.", "I'll be right here."],
-        "brave": ["Guarding lunch!", "On duty here!", "Holding position!", "Standing watch!"]
+        "silly": [
+          "Plop! Landing!",
+          "Boop! Down here!",
+          "Oof! Heavy me!",
+          "Wheee! Rest time!"
+        ],
+        "sweet": [
+          "Okay. I'll wait here.",
+          "See you soon!",
+          "Resting. Bye bye.",
+          "I'll be right here."
+        ],
+        "brave": [
+          "Guarding lunch!",
+          "On duty here!",
+          "Holding position!",
+          "Standing watch!"
+        ]
       },
       "kid": {
-        "silly": ["Down we go. Lunch intact, mostly.", "Parked. I'll guard the crumbs.", "Oof! I'm heavier than I look.", "Landing achieved. Barely."],
-        "sweet": ["I'll wait here, {{name}}.", "Take your time. I'm fine.", "Resting up. See you soon.", "Here when you need me."],
-        "brave": ["Guarding the supplies, captain!", "On duty. Nothing gets past me.", "Holding position with lunch.", "Standing watch. Go on ahead."]
+        "silly": [
+          "Down we go. Lunch intact, mostly.",
+          "Parked. I'll guard the crumbs.",
+          "Oof! I'm heavier than I look.",
+          "Landing achieved. Barely."
+        ],
+        "sweet": [
+          "I'll wait here, {{name}}.",
+          "Take your time. I'm fine.",
+          "Resting up. See you soon.",
+          "Here when you need me."
+        ],
+        "brave": [
+          "Guarding the supplies, captain!",
+          "On duty. Nothing gets past me.",
+          "Holding position with lunch.",
+          "Standing watch. Go on ahead."
+        ]
       },
       "big": {
-        "silly": ["Down. Lunch survived. Probably.", "Parked. I'll guard the crumbs.", "Oof. Heavier than I look.", "Landing achieved. Barely."],
-        "sweet": ["I'll wait here, {{name}}.", "Take your time. I'm fine.", "Resting up. See you soon.", "Here when you need me."],
-        "brave": ["Guarding the supplies.", "On duty. Nothing gets past me.", "Holding position.", "Standing watch. Go on."]
+        "silly": [
+          "Down. Lunch survived. Probably.",
+          "Parked. I'll guard the crumbs.",
+          "Oof. Heavier than I look.",
+          "Landing achieved. Barely."
+        ],
+        "sweet": [
+          "I'll wait here, {{name}}.",
+          "Take your time. I'm fine.",
+          "Resting up. See you soon.",
+          "Here when you need me."
+        ],
+        "brave": [
+          "Guarding the supplies.",
+          "On duty. Nothing gets past me.",
+          "Holding position.",
+          "Standing watch. Go on."
+        ]
       }
     },
     "drop": {
       "little": {
-        "silly": ["Whoa! Tumble!", "Oof! Wobbly lunch!", "Bonk! Sandwich squish!", "Ouch! Bumpy!"],
-        "sweet": ["Ouch. Lunch is okay.", "Oopsie! All fine.", "Bump. Still good.", "Ow. Pick me up?"],
-        "brave": ["Bonk! Lunch is safe!", "Ouch! Still holding!", "Bump! No spills!", "Whoa! All secure!"]
+        "silly": [
+          "Whoa! Tumble!",
+          "Oof! Wobbly lunch!",
+          "Bonk! Sandwich squish!",
+          "Ouch! Bumpy!"
+        ],
+        "sweet": [
+          "Ouch. Lunch is okay.",
+          "Oopsie! All fine.",
+          "Bump. Still good.",
+          "Ow. Pick me up?"
+        ],
+        "brave": [
+          "Bonk! Lunch is safe!",
+          "Ouch! Still holding!",
+          "Bump! No spills!",
+          "Whoa! All secure!"
+        ]
       },
       "kid": {
-        "silly": ["Ouch! My sandwich did a somersault.", "Whoa! Lunch is now abstract art.", "Ow! Everything inside is mixed up.", "Bonk! The grapes have escaped."],
-        "sweet": ["Oof! Lunch is okay, {{name}}.", "Ouch. Nothing spilled, I think.", "Bump! Still fine in here.", "Whoops. We're both okay."],
-        "brave": ["Ouch! Cargo secure, captain!", "Bonk! Lunch survived the landing.", "Whoa! Nothing lost. Still tough.", "Ow! Shake it off. Lunch intact."]
+        "silly": [
+          "Ouch! My sandwich did a somersault.",
+          "Whoa! Lunch is now abstract art.",
+          "Ow! Everything inside is mixed up.",
+          "Bonk! The grapes have escaped."
+        ],
+        "sweet": [
+          "Oof! Lunch is okay, {{name}}.",
+          "Ouch. Nothing spilled, I think.",
+          "Bump! Still fine in here.",
+          "Whoops. We're both okay."
+        ],
+        "brave": [
+          "Ouch! Cargo secure, captain!",
+          "Bonk! Lunch survived the landing.",
+          "Whoa! Nothing lost. Still tough.",
+          "Ow! Shake it off. Lunch intact."
+        ]
       },
       "big": {
-        "silly": ["Ouch! My sandwich just did a somersault.", "Whoa! Lunch is now abstract art.", "Ow! Everything in here is remixed.", "Bonk! The grapes have escaped."],
-        "sweet": ["Oof. Lunch is okay, {{name}}.", "Ouch. Nothing spilled, I think.", "Bump. Still fine in here.", "Whoops. We're both okay."],
-        "brave": ["Ouch! Cargo secure.", "Bonk! Lunch survived the landing.", "Whoa! Nothing lost. Still tough.", "Ow. Shake it off. Contents intact."]
+        "silly": [
+          "Ouch! My sandwich just did a somersault.",
+          "Whoa! Lunch is now abstract art.",
+          "Ow! Everything in here is remixed.",
+          "Bonk! The grapes have escaped."
+        ],
+        "sweet": [
+          "Oof. Lunch is okay, {{name}}.",
+          "Ouch. Nothing spilled, I think.",
+          "Bump. Still fine in here.",
+          "Whoops. We're both okay."
+        ],
+        "brave": [
+          "Ouch! Cargo secure.",
+          "Bonk! Lunch survived the landing.",
+          "Whoa! Nothing lost. Still tough.",
+          "Ow. Shake it off. Contents intact."
+        ]
       }
     },
     "good_morning": {
       "little": {
-        "silly": ["Morning! Lunch time later!", "Wakey wakey! Snacks soon!", "Hi! New day!", "Boing! Good morning!"],
-        "sweet": ["Good morning, {{name}}.", "Morning, friend!", "Hello! New day.", "Good morning. Ready?"],
-        "brave": ["Morning! Big day!", "Rise up! Let's go!", "Good morning! Ready!", "New day! March!"]
+        "silly": [
+          "Morning! Lunch time later!",
+          "Wakey wakey! Snacks soon!",
+          "Hi! New day!",
+          "Boing! Good morning!"
+        ],
+        "sweet": [
+          "Good morning, {{name}}.",
+          "Morning, friend!",
+          "Hello! New day.",
+          "Good morning. Ready?"
+        ],
+        "brave": [
+          "Morning! Big day!",
+          "Rise up! Let's go!",
+          "Good morning! Ready!",
+          "New day! March!"
+        ]
       },
       "kid": {
-        "silly": ["Morning! What are we smuggling today?", "Good morning! I'm hungry and I'm a box.", "Rise and shine! Pack me up.", "Morning, amigo! Snacks await."],
-        "sweet": ["Good morning, {{name}}. Let's have a nice day.", "Morning! Ready for school?", "Hello! Hope today's a good one.", "Good morning, friend."],
-        "brave": ["Morning, captain! Supplies ready?", "Rise and shine! Pack me up.", "Good morning! Big day ahead.", "New day. Let's load up!"]
+        "silly": [
+          "Morning! What are we smuggling today?",
+          "Good morning! I'm hungry and I'm a box.",
+          "Rise and shine! Pack me up.",
+          "Morning, amigo! Snacks await."
+        ],
+        "sweet": [
+          "Good morning, {{name}}. Let's have a nice day.",
+          "Morning! Ready for school?",
+          "Hello! Hope today's a good one.",
+          "Good morning, friend."
+        ],
+        "brave": [
+          "Morning, captain! Supplies ready?",
+          "Rise and shine! Pack me up.",
+          "Good morning! Big day ahead.",
+          "New day. Let's load up!"
+        ]
       },
       "big": {
-        "silly": ["Morning. What are we smuggling today?", "Good morning! I'm a box and I'm hungry.", "Rise and shine. Pack me up.", "Morning. Snacks await."],
-        "sweet": ["Good morning, {{name}}. Have a nice day.", "Morning! Ready for the day?", "Hello. Hope today's a good one.", "Good morning."],
-        "brave": ["Morning. Supplies ready?", "Rise and shine. Let's load up.", "Good morning. Big day ahead.", "New day. Let's move."]
+        "silly": [
+          "Morning. What are we smuggling today?",
+          "Good morning! I'm a box and I'm hungry.",
+          "Rise and shine. Pack me up.",
+          "Morning. Snacks await."
+        ],
+        "sweet": [
+          "Good morning, {{name}}. Have a nice day.",
+          "Morning! Ready for the day?",
+          "Hello. Hope today's a good one.",
+          "Good morning."
+        ],
+        "brave": [
+          "Morning. Supplies ready?",
+          "Rise and shine. Let's load up.",
+          "Good morning. Big day ahead.",
+          "New day. Let's move."
+        ]
       }
     }
   }

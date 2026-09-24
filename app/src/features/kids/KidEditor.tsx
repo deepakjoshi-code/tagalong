@@ -1,6 +1,7 @@
 import { Mic, Play, Square, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { syncTagsForKid } from '@/transport/manager'
 import { Avatar, Button, ListGroup, ListRow, NavBar, Screen, Sheet, toast } from '@/design/components'
 import { AGE_BAND_META } from '@/domain/ageBands'
 import { useStore } from '@/domain/store'
@@ -24,12 +25,16 @@ export function KidEditor() {
   const [band, setBand] = useState<AgeBand>(kid?.ageBand ?? 'kid')
   const [recording, setRecording] = useState(false)
   const [deleteSheet, setDeleteSheet] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const markTagDirty = useStore((st) => st.markTagDirty)
 
   useEffect(() => {
     if (!isNew && !kid) navigate('/kids', { replace: true })
   }, [isNew, kid, navigate])
 
-  const save = () => {
+  const bandChanged = !!kid && kid.ageBand !== band
+
+  const save = async () => {
     const trimmed = name.trim()
     if (isNew) {
       addKid(trimmed ? { ageBand: band, displayName: trimmed } : { ageBand: band })
@@ -38,9 +43,27 @@ export function KidEditor() {
       return
     }
     if (!kid) return
+
+    // The age band lives in TagConfig, so changing it here means nothing until
+    // it reaches the tags. Otherwise a tag keeps talking to the child this kid
+    // used to be.
+    const bandChanged = kid.ageBand !== band
     updateKid(kid.id, { ageBand: band, displayName: trimmed || undefined })
     haptics.success()
-    toast.success('Saved')
+
+    if (bandChanged && tagCount > 0) {
+      setSaving(true)
+      useStore
+        .getState()
+        .tags.filter((t) => t.kidId === kid.id)
+        .forEach((t) => markTagDirty(t.id))
+      const { ok, failed } = await syncTagsForKid(kid.id)
+      setSaving(false)
+      if (failed === 0) toast.success(`Saved. ${plural(ok, 'tag')} updated.`)
+      else toast.show(`Saved. ${plural(failed, 'tag')} could not be reached and will update next time.`)
+    } else {
+      toast.success('Saved')
+    }
     navigate('/kids', { replace: true })
   }
 
@@ -119,7 +142,7 @@ export function KidEditor() {
       {!isNew && kid && (
         <ListGroup
           header="Name recording"
-          footer="Optional. Record the name once and tags can say it. Stored on this phone and on your tags only, never uploaded."
+          footer="Optional, and stored only on this phone. Recordings are never uploaded. Tags will be able to say the name after a future update; for now it is kept here for you."
         >
           {kid.nameClip ? (
             <>
@@ -148,8 +171,12 @@ export function KidEditor() {
         </ListGroup>
       )}
 
-      <Button size="lg" block onClick={save}>
-        {isNew ? 'Add kid' : 'Save'}
+      <Button size="lg" block loading={saving} onClick={() => void save()}>
+        {isNew
+          ? 'Add kid'
+          : bandChanged && tagCount > 0
+            ? `Save and update ${plural(tagCount, 'tag')}`
+            : 'Save'}
       </Button>
 
       {!isNew && kid && (

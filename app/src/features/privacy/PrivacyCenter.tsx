@@ -46,8 +46,13 @@ export function PrivacyCenter() {
           <strong style={{ font: 'var(--text-title-3)' }}>What Tagalong knows</strong>
         </div>
         <p style={{ font: 'var(--text-callout)', color: 'var(--text-2)' }}>
-          All of it lives on this phone. There is no Tagalong account and no Tagalong server, so none of this
-          has ever been sent anywhere.
+          All of it lives on this phone. There is no Tagalong account, and nothing here has ever been sent
+          anywhere.
+        </p>
+        <p style={{ font: 'var(--text-footnote)', color: 'var(--text-2)', marginTop: 8 }}>
+          One honest exception: downloading or updating the app is a normal web request, so whoever hosts it
+          can see your internet address and the time, the same as visiting any website. Never anything about
+          your child.
         </p>
       </Card>
 
@@ -138,7 +143,7 @@ export function PrivacyCenter() {
       </ListGroup>
 
       <p style={{ font: 'var(--text-footnote)', color: 'var(--text-2)', textAlign: 'center', padding: '0 16px' }}>
-        No servers. No accounts. No analytics. We literally can’t see your data.
+        No accounts. No analytics. Nothing about your family leaves this phone.
       </p>
 
       <Sheet

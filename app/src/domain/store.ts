@@ -70,6 +70,8 @@ export interface StoreActions {
   removeKid: (id: string) => void
   addTag: (input: NewTag) => Tag
   updateTag: (id: string, patch: Partial<Omit<Tag, 'id'>>) => void
+  markTagDirty: (id: string) => void
+  markTagSynced: (id: string, at?: number) => void
   removeTag: (id: string) => void
   muteTag: (id: string, minutes: number) => void
   logEvent: (tagId: string, type: TagEventType, at?: number, intensity?: number) => TagEvent | undefined
@@ -135,6 +137,21 @@ export const useStore = create<StoreState>()(
       updateTag: (id, patch) =>
         set((s) => ({
           tags: s.tags.map((t) => (t.id === id ? TagSchema.parse({ ...t, ...patch, id }) : t)),
+        })),
+      /**
+       * Marks settings as changed but not yet delivered. Everything the tag acts
+       * on lives in TagConfig, so any change to those fields leaves the tag
+       * stale until a write succeeds.
+       */
+      markTagDirty: (id) =>
+        set((s) => ({
+          tags: s.tags.map((t) => (t.id === id ? { ...t, pendingSync: true } : t)),
+        })),
+      markTagSynced: (id, at = Date.now()) =>
+        set((s) => ({
+          tags: s.tags.map((t) =>
+            t.id === id ? { ...t, pendingSync: false, lastSyncAt: at } : t,
+          ),
         })),
       removeTag: (id) =>
         set((s) => ({

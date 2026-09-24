@@ -20,15 +20,15 @@ import { samplePhrases } from '@/content/pickPhrase'
 import { AGE_BAND_META } from '@/domain/ageBands'
 import { EVENT_META } from '@/domain/events'
 import { PERSONALITY_META } from '@/domain/personalities'
-import { eventsForTag, isTagMuted } from '@/domain/selectors'
+import { eventsForTag, isTagMuted, isWithinQuietHours } from '@/domain/selectors'
 import { useStore } from '@/domain/store'
 import { THING_META } from '@/domain/things'
 import { DEFAULT_SCHOOL_HOURS, DEFAULT_SETTINGS, PERSONALITIES, type Personality } from '@/domain/types'
 import { haptics } from '@/lib/haptics'
 import { SPEECH_UNAVAILABLE_COPY, canSpeak, speak, speechUnavailableReason } from '@/lib/speech'
-import { QUIET_STEP_MINUTES, formatMinutesOfDay, formatTime, snapToQuietStep } from '@/lib/time'
+import { QUIET_STEP_MINUTES, formatMinutesOfDay, formatTime, mondayFirstDayOfWeek, nowMinutesOfDay, snapToQuietStep } from '@/lib/time'
 import { describeTransportError } from '@/transport'
-import { connectTag, disconnectTag, syncTagConfig } from '@/transport/manager'
+import { connectTag, disconnectTag, factoryResetTag, muteTagOnDevice, syncTagConfig } from '@/transport/manager'
 import s from './TagDetail.module.css'
 
 const timeValue = (min: number) =>
@@ -54,13 +54,14 @@ export function TagDetail() {
   )
   const updateTag = useStore((st) => st.updateTag)
   const removeTag = useStore((st) => st.removeTag)
-  const muteTag = useStore((st) => st.muteTag)
+  const markTagDirty = useStore((st) => st.markTagDirty)
   const clearEvents = useStore((st) => st.clearEvents)
 
   const [shuffleKey, setShuffleKey] = useState(0)
   const [personalitySheet, setPersonalitySheet] = useState(false)
   const [forgetSheet, setForgetSheet] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [quietConfirm, setQuietConfirm] = useState<null | (() => Promise<void>)>(null)
 
   useEffect(() => {
     if (!tag) navigate('/tags', { replace: true })
@@ -86,17 +87,49 @@ export function TagDetail() {
 
   const sync = async (label = 'Settings sent to the tag') => {
     setBusy(true)
+    markTagDirty(tag.id)
     try {
       await syncTagConfig(tag.id)
       toast.success(label)
     } catch (e) {
-      toast.error(describeTransportError(e))
+      // The change stays saved as the parent's intent, but the tag has not
+      // agreed to it, so say so rather than showing a success toast.
+      toast.error(`${describeTransportError(e)} Saved here; it will reach the tag next time.`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  /**
+   * Mute is the parent's emergency stop. It has to reach the tag, and if it
+   * cannot, they have to be told rather than shown a reassuring toast.
+   */
+  const toggleMute = async () => {
+    const minutes = muted ? 0 : 60
+    setBusy(true)
+    haptics.tap()
+    try {
+      await muteTagOnDevice(tag.id, minutes)
+      toast.success(minutes === 0 ? `${tag.nickname} can talk again` : `${tag.nickname} is quiet for an hour`)
+    } catch (e) {
+      toast.error(`${tag.nickname} could not be reached, so it is still talking. ${describeTransportError(e)}`)
     } finally {
       setBusy(false)
     }
   }
 
   const identify = async () => {
+    // Identify deliberately bypasses quiet hours on the tag, so the app is the
+    // only thing standing between a sleeping child and a giggling bottle.
+    if (isWithinQuietHours(tag, nowMinutesOfDay(), mondayFirstDayOfWeek())) {
+      setQuietConfirm(() => identifyNow)
+      return
+    }
+    await identifyNow()
+  }
+
+  const identifyNow = async () => {
+    setQuietConfirm(null)
     setBusy(true)
     try {
       const conn = await connectTag(tag)
@@ -110,15 +143,31 @@ export function TagDetail() {
     }
   }
 
+  const sayNow = async (text: string) => {
+    setQuietConfirm(null)
+    await speak(text, { ageBand: kid.ageBand, personality: tag.personality, volume: tag.volume / 100 })
+  }
+
   const say = async (text: string) => {
     if (!canSpeak()) {
       const reason = speechUnavailableReason()
       return reason === 'none' ? undefined : toast.show(SPEECH_UNAVAILABLE_COPY[reason])
     }
-    await speak(text, { ageBand: kid.ageBand, personality: tag.personality, volume: tag.volume / 100 })
+    if (isWithinQuietHours(tag, nowMinutesOfDay(), mondayFirstDayOfWeek())) {
+      setQuietConfirm(() => () => sayNow(text))
+      return
+    }
+    await sayNow(text)
   }
 
-  const forget = async () => {
+  const forget = async (alsoReset: boolean) => {
+    if (alsoReset) {
+      try {
+        await factoryResetTag(tag.id)
+      } catch {
+        toast.show('Could not reach the tag to release it. Use the button instead.')
+      }
+    }
     await disconnectTag(tag.id)
     removeTag(tag.id)
     setForgetSheet(false)
@@ -261,13 +310,11 @@ export function TagDetail() {
         />
         <ListRow
           title={muted ? 'Unmute' : 'Mute for an hour'}
+          subtitle={tag.pendingMuteMinutes !== undefined ? 'Waiting to reach the tag' : undefined}
           icon={<BellOff size={18} />}
           iconTint={muted ? 'var(--success)' : 'var(--text-3)'}
-          onClick={() => {
-            muteTag(tag.id, muted ? 0 : 60)
-            haptics.tap()
-            toast.show(muted ? `${tag.nickname} can talk again` : `${tag.nickname} is quiet for an hour`)
-          }}
+          onClick={() => void toggleMute()}
+          disabled={busy}
           chevron={false}
         />
       </ListGroup>
@@ -421,14 +468,39 @@ export function TagDetail() {
         open={forgetSheet}
         onClose={() => setForgetSheet(false)}
         title={`Forget ${tag.nickname}?`}
-        subtitle="Its settings and activity are deleted from this phone. The tag keeps working until you pair it again."
+        subtitle="Its settings and activity are deleted from this phone. This does not reset the tag: until it is released it stays paired to this phone and will not pair with another."
         footer={
           <>
-            <Button size="lg" block variant="destructive" onClick={() => void forget()}>
-              Forget tag
+            <Button size="lg" block variant="destructive" onClick={() => void forget(true)}>
+              Forget and release the tag
             </Button>
-            <Button size="lg" block variant="tertiary" onClick={() => setForgetSheet(false)}>
+            <Button size="lg" block variant="tertiary" onClick={() => void forget(false)}>
+              Just forget it here
+            </Button>
+            <Button size="lg" block variant="ghost" onClick={() => setForgetSheet(false)}>
               Cancel
+            </Button>
+          </>
+        }
+      >
+        <p style={{ font: 'var(--text-footnote)', color: 'var(--text-2)' }}>
+          If the tag is out of range, you can release it later: put it on the charger and hold its
+          button for ten seconds.
+        </p>
+      </Sheet>
+
+      <Sheet
+        open={quietConfirm !== null}
+        onClose={() => setQuietConfirm(null)}
+        title="It’s quiet hours"
+        subtitle={`${tag.nickname} is meant to be silent right now. Play anyway?`}
+        footer={
+          <>
+            <Button size="lg" block onClick={() => void quietConfirm?.()}>
+              Play anyway
+            </Button>
+            <Button size="lg" block variant="tertiary" onClick={() => setQuietConfirm(null)}>
+              Not now
             </Button>
           </>
         }

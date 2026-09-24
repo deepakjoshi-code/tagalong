@@ -172,9 +172,13 @@ export function encodeControl(op: ControlOp): Uint8Array {
       return b
     }
     case 'setTime': {
-      const b = new Uint8Array(3)
+      // The weekday is optional on the wire but required for the school-day
+      // mask: without it the tag applies the mask every day.
+      const hasDay = op.dayOfWeek !== undefined && op.dayOfWeek >= 0 && op.dayOfWeek <= 6
+      const b = new Uint8Array(hasDay ? 4 : 3)
       b[0] = 0x04
       new DataView(b.buffer).setUint16(1, clamp(op.minutes, 0, 1439), true)
+      if (hasDay) b[3] = op.dayOfWeek as number
       return b
     }
     case 'factoryReset':

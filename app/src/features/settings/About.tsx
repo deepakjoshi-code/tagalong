@@ -16,12 +16,12 @@ export function About() {
         <ListRow title="Version" value={VERSION} />
         <ListRow title="Content packs" value={loadedPacks().length ? loadedPacks().join(', ') : 'none loaded'} />
         <ListRow title="Works offline" value="Yes" />
-        <ListRow title="Servers used" value="None" />
+        <ListRow title="Servers used" value="Only to download the app" />
       </ListGroup>
 
       <ListGroup
         header="How it works"
-        footer="Tagalong talks to your tags over Bluetooth, directly from this phone. There is no Tagalong server, no account, and no analytics. Your tags have no microphone, no camera and no location."
+        footer="Tagalong talks to your tags over Bluetooth, directly from this phone. There is no Tagalong account and no analytics, and nothing about your family is sent anywhere. Downloading or updating the app itself is an ordinary web request, which whoever hosts it can see like any website visit. Your tags have no microphone, no camera and no location."
       >
         <ListRow title="Connection" value="Bluetooth" />
         <ListRow title="Storage" value="This device" />
