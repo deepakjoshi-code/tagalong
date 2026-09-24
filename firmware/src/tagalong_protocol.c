@@ -188,14 +188,23 @@ int tag_control_encode(const tag_control_t *ctrl, uint8_t *out, size_t out_len)
         out[0] = TAG_CTRL_FACTORY_RESET;
         out[1] = 0xA5;
         return 2;
-    case TAG_CTRL_MUTE:
+    case TAG_CTRL_MUTE: {
+        if (out_len < 3) return TAG_ERR_LENGTH;
+        out[0] = TAG_CTRL_MUTE;
+        wr16(&out[1], ctrl->arg);
+        return 3;
+    }
     case TAG_CTRL_SET_TIME: {
         if (out_len < 3) return TAG_ERR_LENGTH;
-        uint16_t arg = ctrl->arg;
-        if (ctrl->op == TAG_CTRL_SET_TIME && arg > 1439u) arg = 1439u;
-        out[0] = (uint8_t)ctrl->op;
+        uint16_t arg = ctrl->arg > 1439u ? 1439u : ctrl->arg;
+        out[0] = TAG_CTRL_SET_TIME;
         wr16(&out[1], arg);
-        return 3;
+        /* The weekday byte is optional on the wire but required for the school
+         * mask, so it is emitted whenever the caller knows the day. */
+        if (!ctrl->has_day_of_week || ctrl->day_of_week > 6u) return 3;
+        if (out_len < 4) return TAG_ERR_LENGTH;
+        out[3] = ctrl->day_of_week;
+        return 4;
     }
     default:
         return TAG_ERR_VALUE;
@@ -207,6 +216,8 @@ tag_status_t tag_control_decode(const uint8_t *in, size_t in_len, tag_control_t 
     if (!in || !out || in_len < 1) return TAG_ERR_LENGTH;
     out->arg = 0;
     out->preview = TAG_EVT_NONE;
+    out->has_day_of_week = false;
+    out->day_of_week = TAG_DAY_UNKNOWN;
     switch (in[0]) {
     case TAG_CTRL_IDENTIFY:
     case TAG_CTRL_ENTER_DFU:
@@ -223,10 +234,19 @@ tag_status_t tag_control_decode(const uint8_t *in, size_t in_len, tag_control_t 
         out->op = TAG_CTRL_FACTORY_RESET;
         return TAG_OK;
     case TAG_CTRL_MUTE:
+        if (in_len < 3) return TAG_ERR_LENGTH;
+        out->op = TAG_CTRL_MUTE;
+        out->arg = rd16(&in[1]);
+        return TAG_OK;
     case TAG_CTRL_SET_TIME:
         if (in_len < 3) return TAG_ERR_LENGTH;
-        out->op = (tag_control_op_t)in[0];
+        out->op = TAG_CTRL_SET_TIME;
         out->arg = rd16(&in[1]);
+        /* Older senders omit the weekday; the mask then applies every day. */
+        if (in_len >= 4 && in[3] <= 6u) {
+            out->has_day_of_week = true;
+            out->day_of_week = in[3];
+        }
         return TAG_OK;
     default:
         return TAG_ERR_VALUE;
@@ -235,7 +255,14 @@ tag_status_t tag_control_decode(const uint8_t *in, size_t in_len, tag_control_t 
 
 bool tag_minute_in_window(uint16_t minute_of_day, uint16_t start_min, uint16_t end_min)
 {
-    if (start_min == end_min) return false;
+    /*
+     * A degenerate window (start == end) cannot express a duration, so it has to
+     * mean one of "always" or "never". It fails safe to ALWAYS: a tag that stays
+     * quiet is a disappointment, a tag that talks through the night or through a
+     * lesson is what gets the product thrown away. The app also refuses to
+     * produce this config, so reaching here means something already went wrong.
+     */
+    if (start_min == end_min) return true;
     if (start_min < end_min) return minute_of_day >= start_min && minute_of_day < end_min;
     /* Wraps past midnight. */
     return minute_of_day >= start_min || minute_of_day < end_min;

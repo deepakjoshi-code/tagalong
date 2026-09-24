@@ -143,6 +143,13 @@ typedef struct {
     tag_control_op_t op;
     uint16_t arg;               /* minutes for MUTE/SET_TIME */
     tag_event_type_t preview;   /* for PREVIEW */
+    /*
+     * SET_TIME only. The wire encodes 0 = Monday .. 6 = Sunday, so a
+     * zero-initialised struct would silently mean "Monday". An explicit flag
+     * keeps the safe value the default: no flag, no weekday byte.
+     */
+    bool has_day_of_week;
+    uint8_t day_of_week;        /* 0 = Monday .. 6 = Sunday */
 } tag_control_t;
 
 typedef enum {

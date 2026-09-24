@@ -53,12 +53,35 @@ static tag_sensor_block_t make_oscillation(int16_t amplitude)
     return b;
 }
 
+/** Jumps the simulated clock, then feeds one still block so the engine sees it. */
+static void idle_for_ms(tag_event_engine_t *e, uint32_t ms, tag_event_batch_t *out, int *hits,
+                        tag_event_type_t watch);
+
 static bool batch_has(const tag_event_batch_t *b, tag_event_type_t t)
 {
     for (uint8_t i = 0; i < b->count; i++) {
         if (b->items[i].type == t) return true;
     }
     return false;
+}
+
+static void idle_for_ms(tag_event_engine_t *e, uint32_t ms, tag_event_batch_t *out, int *hits,
+                        tag_event_type_t watch)
+{
+    clock_ms += ms;
+    for (uint16_t i = 0; i < BLOCK_N; i++) { buf[i].x = 0; buf[i].y = 0; buf[i].z = 1000; }
+    tag_sensor_block_t b = { clock_ms, buf, BLOCK_N, RATE_HZ, TAG_CAP_NONE, TAG_LUX_NONE };
+    tag_events_process(e, &b, out);
+    if (hits && batch_has(out, watch)) (*hits)++;
+}
+
+/** A busy hallway: handled, set down, handled again. Leaves transitions recent. */
+static void busy_then_still(tag_event_engine_t *e, tag_event_batch_t *out)
+{
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < 6; i++) { tag_sensor_block_t b = make_block(900, 1000, 0); tag_events_process(e, &b, out); }
+        for (int i = 0; i < 12; i++) { tag_sensor_block_t b = make_block(5, 1000, 0); tag_events_process(e, &b, out); }
+    }
 }
 
 /** Runs `blocks` steady blocks, returning how many times `t` fired. */
@@ -491,6 +514,179 @@ TEST(a_lunchbox_reopened_soon_after_does_not_re_announce)
     CHECK_EQ(reopened, 0);
 }
 
+TEST(a_toothbrush_never_reports_a_shake_while_being_brushed)
+{
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_TOOTHBRUSH);
+    tag_events_set_time(&e, 7 * 60 + 30, clock_ms);
+    tag_event_batch_t out;
+
+    int shakes = 0, dones = 0;
+    for (int i = 0; i < 400; i++) {
+        tag_sensor_block_t b = make_oscillation(1600);
+        tag_events_process(&e, &b, &out);
+        if (batch_has(&out, TAG_EVT_SHAKE)) shakes++;
+        if (batch_has(&out, TAG_EVT_BRUSH_DONE)) dones++;
+    }
+    /* Brushing is a superset of the shake signature; it must not drown out the
+     * celebration the child is actually working towards. */
+    CHECK_EQ(shakes, 0);
+    CHECK_EQ(dones, 1);
+}
+
+TEST(brushing_celebrations_are_capped_at_two_a_day)
+{
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_TOOTHBRUSH);
+    tag_events_set_time(&e, 7 * 60, clock_ms);
+    tag_event_batch_t out;
+
+    int dones = 0;
+    for (int session = 0; session < 4; session++) {
+        for (int i = 0; i < 400; i++) {
+            tag_sensor_block_t b = make_oscillation(1600);
+            tag_events_process(&e, &b, &out);
+            if (batch_has(&out, TAG_EVT_BRUSH_DONE)) dones++;
+        }
+        /* A long pause ends the session. */
+        for (int i = 0; i < 1000; i++) {
+            tag_sensor_block_t b = make_block(5, 1000, 0);
+            tag_events_process(&e, &b, &out);
+        }
+    }
+    CHECK_EQ(dones, 2);
+}
+
+TEST(left_behind_needs_a_leaving_hour_and_a_recently_busy_room)
+{
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_BACKPACK);
+    tag_event_batch_t out;
+
+    /* Midday: not a leaving hour, so even a perfect signature says nothing. */
+    tag_events_set_time(&e, 12 * 60, clock_ms);
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < 6; i++) { tag_sensor_block_t b = make_block(900, 1000, 0); tag_events_process(&e, &b, &out); }
+        for (int i = 0; i < 12; i++) { tag_sensor_block_t b = make_block(5, 1000, 0); tag_events_process(&e, &b, &out); }
+    }
+    int nags = 0;
+    for (int i = 0; i < 5000; i++) {
+        tag_sensor_block_t b = make_block(5, 1000, 0);
+        tag_events_process(&e, &b, &out);
+        if (batch_has(&out, TAG_EVT_LEFT_BEHIND)) nags++;
+    }
+    CHECK_EQ(nags, 0);
+}
+
+TEST(left_behind_says_it_once_and_then_leaves_you_alone)
+{
+    /*
+     * The failure mode that gets a product switched off is repetition. However
+     * long the bag sits there, the tag mentions it once.
+     */
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_BACKPACK);
+    tag_events_set_time(&e, 7 * 60 + 30, clock_ms);
+    tag_event_batch_t out;
+
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < 6; i++) { tag_sensor_block_t b = make_block(900, 1000, 0); tag_events_process(&e, &b, &out); }
+        for (int i = 0; i < 12; i++) { tag_sensor_block_t b = make_block(5, 1000, 0); tag_events_process(&e, &b, &out); }
+    }
+    int nags = 0;
+    for (int i = 0; i < 20000; i++) { /* over an hour and a half of stillness */
+        tag_sensor_block_t b = make_block(5, 1000, 0);
+        tag_events_process(&e, &b, &out);
+        if (batch_has(&out, TAG_EVT_LEFT_BEHIND)) nags++;
+    }
+    CHECK_EQ(nags, 1);
+}
+
+TEST(left_behind_never_fires_before_the_clock_is_known)
+{
+    /*
+     * The uptime counter alone would put this run inside a leaving hour, so the
+     * only thing keeping the tag quiet is that it refuses to guess the time.
+     */
+    clock_ms = 7u * 3600u * 1000u + 30u * 60u * 1000u; /* uptime reads as 07:30 */
+    rng = 12345u;
+    tag_event_engine_t e;
+    tag_events_init(&e, TAG_THING_BACKPACK, clock_ms);
+    warm_up(&e);
+    /* deliberately no tag_events_set_time */
+
+    tag_event_batch_t out;
+    busy_then_still(&e, &out);
+    int nags = 0;
+    idle_for_ms(&e, 25u * 60u * 1000u, &out, &nags, TAG_EVT_LEFT_BEHIND);
+    CHECK_EQ(nags, 0);
+}
+
+TEST(left_behind_ignores_a_room_that_was_busy_hours_ago)
+{
+    /*
+     * A bag handled at breakfast and untouched since is not "forgotten" when the
+     * afternoon leaving hour comes round. Only recent bustle counts.
+     */
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_BACKPACK);
+    tag_events_set_time(&e, 7 * 60, clock_ms);
+    tag_event_batch_t out;
+
+    busy_then_still(&e, &out);
+    int nags = 0;
+    /* Sit untouched until the afternoon window; the transitions are ancient. */
+    idle_for_ms(&e, 7u * 3600u * 1000u + 30u * 60u * 1000u, &out, &nags, TAG_EVT_LEFT_BEHIND);
+    idle_for_ms(&e, 60u * 1000u, &out, &nags, TAG_EVT_LEFT_BEHIND);
+    CHECK_EQ(nags, 0);
+}
+
+TEST(left_behind_fires_at_most_once_a_day_even_across_both_windows)
+{
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_BACKPACK);
+    tag_events_set_time(&e, 7 * 60 + 30, clock_ms);
+    tag_event_batch_t out;
+    int nags = 0;
+
+    /* Morning: busy hallway, then abandoned. This one is allowed to speak. */
+    busy_then_still(&e, &out);
+    idle_for_ms(&e, 25u * 60u * 1000u, &out, &nags, TAG_EVT_LEFT_BEHIND);
+    CHECK_EQ(nags, 1);
+
+    /* Afternoon, well past the cooldown: busy again, abandoned again. Silent. */
+    idle_for_ms(&e, 7u * 3600u * 1000u, &out, NULL, TAG_EVT_NONE);
+    busy_then_still(&e, &out);
+    idle_for_ms(&e, 25u * 60u * 1000u, &out, &nags, TAG_EVT_LEFT_BEHIND);
+    CHECK_EQ(nags, 1);
+}
+
+TEST(left_behind_does_fire_for_the_case_it_exists_for)
+{
+    /*
+     * The positive case. Without this the guards could all be tightened into a
+     * feature that never fires, and every negative test would still pass.
+     */
+    tag_event_engine_t e;
+    reset(&e, TAG_THING_BACKPACK);
+    tag_events_set_time(&e, 7 * 60 + 30, clock_ms); /* school-run o'clock */
+    tag_event_batch_t out;
+
+    /* A busy hallway: packed, moved, put down, picked up again. */
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < 6; i++) { tag_sensor_block_t b = make_block(900, 1000, 0); tag_events_process(&e, &b, &out); }
+        for (int i = 0; i < 12; i++) { tag_sensor_block_t b = make_block(5, 1000, 0); tag_events_process(&e, &b, &out); }
+    }
+    /* Then everyone leaves and it sits there. 20 minutes is ~3750 blocks. */
+    int nags = 0;
+    for (int i = 0; i < 4200; i++) {
+        tag_sensor_block_t b = make_block(5, 1000, 0);
+        tag_events_process(&e, &b, &out);
+        if (batch_has(&out, TAG_EVT_LEFT_BEHIND)) nags++;
+    }
+    CHECK_EQ(nags, 1);
+}
+
 TEST(a_backpack_alone_in_a_quiet_room_says_nothing)
 {
     tag_event_engine_t e;
@@ -519,6 +715,14 @@ int main(void)
     RUN(a_brush_knocked_in_a_drawer_stays_silent);
     RUN(a_lunchbox_lid_opening_is_detected_once);
     RUN(a_lunchbox_reopened_soon_after_does_not_re_announce);
+    RUN(a_toothbrush_never_reports_a_shake_while_being_brushed);
+    RUN(brushing_celebrations_are_capped_at_two_a_day);
+    RUN(left_behind_needs_a_leaving_hour_and_a_recently_busy_room);
+    RUN(left_behind_says_it_once_and_then_leaves_you_alone);
+    RUN(left_behind_never_fires_before_the_clock_is_known);
+    RUN(left_behind_ignores_a_room_that_was_busy_hours_ago);
+    RUN(left_behind_fires_at_most_once_a_day_even_across_both_windows);
+    RUN(left_behind_does_fire_for_the_case_it_exists_for);
     RUN(a_backpack_alone_in_a_quiet_room_says_nothing);
     return test_report("events");
 }

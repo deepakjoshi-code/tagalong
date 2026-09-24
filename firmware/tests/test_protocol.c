@@ -190,6 +190,7 @@ TEST(control_ops_match_the_protocol_table)
     CHECK_EQ(buf[1], 60);
     CHECK_EQ(buf[2], 0);
 
+    /* Without a known weekday the frame stays 3 bytes, as older senders emit. */
     c = (tag_control_t){ .op = TAG_CTRL_SET_TIME, .arg = 1439 };
     CHECK_EQ(tag_control_encode(&c, buf, sizeof(buf)), 3);
     CHECK_EQ(buf[0], 0x04);
@@ -206,6 +207,34 @@ TEST(control_ops_match_the_protocol_table)
     CHECK_EQ(buf[0], 0x06);
 }
 
+TEST(set_time_carries_the_weekday_when_it_is_known)
+{
+    uint8_t buf[8];
+    tag_control_t c = { .op = TAG_CTRL_SET_TIME, .arg = 12 * 60, .has_day_of_week = true,
+                        .day_of_week = 2 /* Wednesday */ };
+    CHECK_EQ(tag_control_encode(&c, buf, sizeof(buf)), 4);
+    CHECK_EQ(buf[0], 0x04);
+    CHECK_EQ(buf[3], 2);
+
+    tag_control_t out;
+    CHECK_EQ(tag_control_decode(buf, 4, &out), TAG_OK);
+    CHECK_EQ(out.has_day_of_week, true);
+    CHECK_EQ(out.day_of_week, 2);
+
+    /* A 3-byte frame from an older app decodes with no weekday, not Monday. */
+    CHECK_EQ(tag_control_decode(buf, 3, &out), TAG_OK);
+    CHECK_EQ(out.has_day_of_week, false);
+    CHECK_EQ(out.day_of_week, TAG_DAY_UNKNOWN);
+}
+
+TEST(a_zero_initialised_control_never_claims_a_weekday)
+{
+    /* The wire uses 0 for Monday, so the struct must not default to it. */
+    uint8_t buf[8];
+    tag_control_t c = { .op = TAG_CTRL_SET_TIME, .arg = 60 };
+    CHECK_EQ(tag_control_encode(&c, buf, sizeof(buf)), 3);
+}
+
 TEST(control_decode_rejects_a_bad_factory_reset)
 {
     uint8_t bad[2] = { 0x05, 0x00 };
@@ -214,6 +243,24 @@ TEST(control_decode_rejects_a_bad_factory_reset)
     uint8_t good[2] = { 0x05, 0xA5 };
     CHECK_EQ(tag_control_decode(good, sizeof(good), &out), TAG_OK);
     CHECK_EQ(out.op, TAG_CTRL_FACTORY_RESET);
+}
+
+TEST(a_degenerate_quiet_window_fails_safe_to_always_quiet)
+{
+    /*
+     * start == end cannot express a duration. It must mean "always", not
+     * "never": a silent tag disappoints, a tag talking through a lesson gets
+     * the product thrown away. The app refuses to produce this config, so this
+     * is the last line of defence.
+     */
+    CHECK_EQ(tag_minute_in_window(0, 600, 600), true);
+    CHECK_EQ(tag_minute_in_window(720, 600, 600), true);
+    CHECK_EQ(tag_minute_in_window(1439, 0, 0), true);
+
+    tag_config_t c = sample_config();
+    c.quiet_start_min = 8 * 60;
+    c.quiet_end_min = 8 * 60;
+    CHECK_EQ(tag_in_quiet_hours(&c, 15 * 60, TAG_DAY_UNKNOWN), true);
 }
 
 TEST(quiet_hours_wrap_past_midnight)
@@ -291,7 +338,10 @@ int main(void)
     RUN(event_frame_rejects_unknown_codes);
     RUN(info_frame_round_trips);
     RUN(control_ops_match_the_protocol_table);
+    RUN(set_time_carries_the_weekday_when_it_is_known);
+    RUN(a_zero_initialised_control_never_claims_a_weekday);
     RUN(control_decode_rejects_a_bad_factory_reset);
+    RUN(a_degenerate_quiet_window_fails_safe_to_always_quiet);
     RUN(quiet_hours_wrap_past_midnight);
     RUN(the_school_window_silences_the_tag_on_school_days);
     RUN(the_school_window_round_trips);

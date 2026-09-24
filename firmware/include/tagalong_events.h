@@ -74,6 +74,21 @@ typedef struct {
 #define TAG_LUX_DARK 5u
 #define TAG_LEFT_BEHIND_MS (20u * 60u * 1000u)
 /*
+ * A transition older than this no longer counts towards "the room was busy".
+ * It must exceed TAG_LEFT_BEHIND_MS, because the whole signature is "busy, then
+ * quiet for twenty minutes" — a decay shorter than the stillness requirement
+ * would clear the counter before the event could ever fire.
+ */
+#define TAG_TRANSITION_DECAY_MS (TAG_LEFT_BEHIND_MS + 20u * 60u * 1000u)
+/* Leaving something behind only matters around leaving the house or school. */
+#define TAG_LEFT_BEHIND_MORNING_START (7u * 60u)
+#define TAG_LEFT_BEHIND_MORNING_END (9u * 60u)
+#define TAG_LEFT_BEHIND_AFTERNOON_START (14u * 60u)
+#define TAG_LEFT_BEHIND_AFTERNOON_END (17u * 60u)
+/* A pause longer than this ends a brushing session. */
+#define TAG_BRUSH_SESSION_RESET_MS (5u * 60u * 1000u)
+#define TAG_BRUSH_MAX_SESSIONS_PER_DAY 2u
+/*
  * Regular oscillation for this long means a vehicle, not a child. Kept short
  * because every block before confirmation is a chance to say something wrong.
  */
@@ -128,6 +143,8 @@ typedef struct {
     uint32_t brush_accum_ms;
     bool brush_announced_start;
     bool brush_announced_done;
+    /* At most two announced sessions a day, so a child cannot farm celebrations. */
+    uint8_t brush_sessions_today;
 
     /* Lunchbox */
     uint16_t last_lux;
@@ -137,8 +154,15 @@ typedef struct {
 
     /* Backpack */
     uint8_t recent_transitions;
-    uint32_t transitions_window_ms;
+    uint32_t last_transition_ms;
     uint32_t last_left_behind_ms;
+    uint16_t last_left_behind_day_min;
+    bool left_behind_today;
+
+    /* Time of day, supplied by the app (the tag has no clock). */
+    uint16_t minute_of_day;
+    bool time_known;
+    uint32_t time_set_at_ms;
 
     /* Boot settling: no events for the first TAG_WARMUP_MS. */
     uint32_t boot_ms;
@@ -148,6 +172,13 @@ typedef struct {
 #define TAG_WARMUP_MS 20000u
 
 void tag_events_init(tag_event_engine_t *e, tag_thing_t thing, uint32_t now_ms);
+
+/**
+ * Tells the engine what time it is. The app sends this on every connection
+ * (ControlOp 0x04). Until it is called, events that only make sense at certain
+ * times of day stay suppressed rather than firing at the wrong moment.
+ */
+void tag_events_set_time(tag_event_engine_t *e, uint16_t minute_of_day, uint32_t now_ms);
 
 /**
  * Feeds one sensor block and returns everything detected in it.

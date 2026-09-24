@@ -63,6 +63,26 @@ static bool elapsed_at_least(uint32_t now, uint32_t since, uint32_t span)
 
 /* ------------------------------------------------------------------- init */
 
+void tag_events_set_time(tag_event_engine_t *e, uint16_t minute_of_day, uint32_t now_ms)
+{
+    if (!e || minute_of_day > 1439u) return;
+    /* Time going backwards means a new day: reset the per-day allowances. */
+    if (e->time_known && minute_of_day < e->minute_of_day) {
+        e->brush_sessions_today = 0u;
+        e->left_behind_today = false;
+    }
+    e->minute_of_day = minute_of_day;
+    e->time_known = true;
+    e->time_set_at_ms = now_ms;
+}
+
+/** Minute of day advanced by the elapsed milliseconds since the last sync. */
+static uint16_t current_minute(const tag_event_engine_t *e, uint32_t now_ms)
+{
+    uint32_t elapsed_min = (now_ms - e->time_set_at_ms) / 60000u;
+    return (uint16_t)((e->minute_of_day + elapsed_min) % 1440u);
+}
+
 void tag_events_init(tag_event_engine_t *e, tag_thing_t thing, uint32_t now_ms)
 {
     memset(e, 0, sizeof(*e));
@@ -166,6 +186,16 @@ static void detect_motion(tag_event_engine_t *e, const tag_sensor_block_t *b,
     bool still = st->variance < TAG_STILL_VAR;
 
     /*
+     * "The room was busy" has to mean recently busy. Without decay the counter
+     * only ever grows, so every backpack that has been picked up three times in
+     * its life qualifies, and left-behind fires after any ordinary putdown.
+     */
+    if (e->recent_transitions > 0u &&
+        (uint32_t)(b->now_ms - e->last_transition_ms) > TAG_TRANSITION_DECAY_MS) {
+        e->recent_transitions = 0u;
+    }
+
+    /*
      * Vehicle rejection. Road vibration reads as movement by variance alone, so
      * the discriminator is regularity over time: a car oscillates steadily for
      * minutes, a child handling a bottle does not. Once transport is confirmed,
@@ -194,8 +224,8 @@ static void detect_motion(tag_event_engine_t *e, const tag_sensor_block_t *b,
             if ((uint32_t)(b->now_ms - e->state_since_ms) >= TAG_PICKUP_CONFIRM_MS) {
                 e->motion = TAG_MOTION_HANDLED;
                 e->state_since_ms = b->now_ms;
-                e->recent_transitions++;
-                e->transitions_window_ms = b->now_ms;
+                if (e->recent_transitions < 255u) e->recent_transitions++;
+                e->last_transition_ms = b->now_ms;
                 /* A drop in the same breath already told the story; don't stack. */
                 if (!e->transport_suppressed &&
                     elapsed_at_least(b->now_ms, e->last_drop_ms, 2000u)) {
@@ -210,7 +240,8 @@ static void detect_motion(tag_event_engine_t *e, const tag_sensor_block_t *b,
             if ((uint32_t)(b->now_ms - e->last_motion_ms) >= TAG_PUTDOWN_CONFIRM_MS) {
                 e->motion = TAG_MOTION_STILL;
                 e->state_since_ms = b->now_ms;
-                e->recent_transitions++;
+                if (e->recent_transitions < 255u) e->recent_transitions++;
+                e->last_transition_ms = b->now_ms;
                 if (!e->transport_suppressed) emit(out, TAG_EVT_PUTDOWN, 0);
             }
         } else {
@@ -218,9 +249,14 @@ static void detect_motion(tag_event_engine_t *e, const tag_sensor_block_t *b,
         }
     }
 
-    /* Shake: a deliberate, energetic wiggle. Harder to trigger than walking. */
-    if (!e->transport_suppressed && st->crossings >= TAG_SHAKE_MIN_CROSSINGS &&
-        st->peak_mag > TAG_SHAKE_PEAK_MILLI_G &&
+    /*
+     * Shake: a deliberate, energetic wiggle. Brushing is a strict superset of
+     * this signature, so a toothbrush would shout "shake" all the way through a
+     * two-minute clean and never reach the celebration. A toothbrush therefore
+     * has no shake event at all; brushing is what shaking a toothbrush means.
+     */
+    if (e->thing != TAG_THING_TOOTHBRUSH && !e->brushing && !e->transport_suppressed &&
+        st->crossings >= TAG_SHAKE_MIN_CROSSINGS && st->peak_mag > TAG_SHAKE_PEAK_MILLI_G &&
         elapsed_at_least(b->now_ms, e->last_shake_ms, TAG_SHAKE_DEBOUNCE_MS)) {
         emit(out, TAG_EVT_SHAKE, 0);
         e->last_shake_ms = b->now_ms;
@@ -327,7 +363,8 @@ static void detect_toothbrush(tag_event_engine_t *e, const tag_sensor_block_t *b
     if (active) {
         if (!e->brushing) {
             bool new_session = e->brush_last_active_ms == 0u ||
-                               (uint32_t)(b->now_ms - e->brush_last_active_ms) > TAG_BRUSH_GAP_MS;
+                               (uint32_t)(b->now_ms - e->brush_last_active_ms) >
+                                   TAG_BRUSH_SESSION_RESET_MS;
             if (new_session) {
                 e->brush_session_start_ms = b->now_ms;
                 e->brush_accum_ms = 0u;
@@ -339,13 +376,21 @@ static void detect_toothbrush(tag_event_engine_t *e, const tag_sensor_block_t *b
         e->brush_accum_ms += block_ms;
         e->brush_last_active_ms = b->now_ms;
 
+        /* Two announced sessions a day is a morning and an evening. Beyond that
+         * the tag keeps counting but stops celebrating, so the brush cannot be
+         * turned into a toy that pays out. */
+        bool may_announce = e->brush_sessions_today < TAG_BRUSH_MAX_SESSIONS_PER_DAY;
+
         if (!e->brush_announced_start && e->brush_accum_ms >= 4000u) {
-            emit(out, TAG_EVT_BRUSH_START, 0);
+            if (may_announce) emit(out, TAG_EVT_BRUSH_START, 0);
             e->brush_announced_start = true;
         }
         if (!e->brush_announced_done && e->brush_accum_ms >= TAG_BRUSH_TARGET_MS) {
-            uint32_t half = e->brush_accum_ms / 2000u;
-            emit(out, TAG_EVT_BRUSH_DONE, (uint8_t)(half > 255u ? 255u : half));
+            if (may_announce) {
+                uint32_t half = e->brush_accum_ms / 2000u;
+                emit(out, TAG_EVT_BRUSH_DONE, (uint8_t)(half > 255u ? 255u : half));
+                if (e->brush_sessions_today < 255u) e->brush_sessions_today++;
+            }
             e->brush_announced_done = true;
         }
         return;
@@ -357,9 +402,11 @@ static void detect_toothbrush(tag_event_engine_t *e, const tag_sensor_block_t *b
     if (e->brush_last_active_ms != 0u &&
         (uint32_t)(b->now_ms - e->brush_last_active_ms) > 20000u) {
         if (!e->brush_announced_done && e->brush_accum_ms >= TAG_BRUSH_SHORT_MIN_MS &&
-            e->brush_accum_ms < TAG_BRUSH_TARGET_MS) {
+            e->brush_accum_ms < TAG_BRUSH_TARGET_MS &&
+            e->brush_sessions_today < TAG_BRUSH_MAX_SESSIONS_PER_DAY) {
             uint32_t half = e->brush_accum_ms / 2000u;
             emit(out, TAG_EVT_BRUSH_SHORT, (uint8_t)(half > 255u ? 255u : half));
+            if (e->brush_sessions_today < 255u) e->brush_sessions_today++;
         }
         e->brush_last_active_ms = 0u;
         e->brush_accum_ms = 0u;
@@ -413,15 +460,28 @@ static void detect_backpack(tag_event_engine_t *e, const tag_sensor_block_t *b,
 
     /*
      * Left behind is the most dangerous event in the product: get it wrong and
-     * the tag becomes a nag. It needs a busy room that then went quiet.
+     * the tag becomes a nag that the parent switches off for good. Every guard
+     * has to hold: the room was recently busy, it then went quiet for a long
+     * time, the clock is known, it is a leaving-the-house hour, and it has not
+     * already fired today.
      */
-    if (e->recent_transitions >= 3u &&
-        (uint32_t)(b->now_ms - e->last_motion_ms) >= TAG_LEFT_BEHIND_MS &&
-        elapsed_at_least(b->now_ms, e->last_left_behind_ms, 3u * 3600000u)) {
-        emit(out, TAG_EVT_LEFT_BEHIND, 0);
-        e->last_left_behind_ms = b->now_ms;
-        e->recent_transitions = 0u;
-    }
+    if (!e->time_known) return;               /* never guess at the hour */
+    if (e->left_behind_today) return;
+    if (e->recent_transitions < 3u) return;
+    if ((uint32_t)(b->now_ms - e->last_motion_ms) < TAG_LEFT_BEHIND_MS) return;
+    if (!elapsed_at_least(b->now_ms, e->last_left_behind_ms, 3u * 3600000u)) return;
+
+    uint16_t minute = current_minute(e, b->now_ms);
+    bool leaving_hour =
+        (minute >= TAG_LEFT_BEHIND_MORNING_START && minute < TAG_LEFT_BEHIND_MORNING_END) ||
+        (minute >= TAG_LEFT_BEHIND_AFTERNOON_START && minute < TAG_LEFT_BEHIND_AFTERNOON_END);
+    if (!leaving_hour) return;
+
+    emit(out, TAG_EVT_LEFT_BEHIND, 0);
+    e->last_left_behind_ms = b->now_ms;
+    e->last_left_behind_day_min = minute;
+    e->left_behind_today = true;
+    e->recent_transitions = 0u;
 }
 
 /* ---------------------------------------------------------------- process */
