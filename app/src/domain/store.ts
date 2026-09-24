@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 import { clear as idbClear, del as idbDel, get as idbGet, set as idbSet } from 'idb-keyval'
+import { createDebouncedPersistStorage } from '@/lib/debouncedStorage'
 import { newId } from '@/lib/id'
 import { requestPersistentStorage } from '@/lib/persistence'
 import {
@@ -20,16 +21,36 @@ import {
 export const STORE_KEY = 'tagalong:v1'
 const DAY_MS = 24 * 60 * 60 * 1000
 
-/** IndexedDB-backed storage so blobs and larger logs survive; nothing ever leaves the device. */
-const idbStorage: StateStorage = {
-  getItem: async (name) => (await idbGet<string>(name)) ?? null,
-  setItem: async (name, value) => {
-    await idbSet(name, value)
+/**
+ * Hard ceiling on the event log, independent of the 7-day retention window.
+ * A tag replaying a buffer, or a fault, must never be able to grow the log
+ * without bound: everything here is serialised to storage on save.
+ */
+export const MAX_EVENTS = 2000
+/**
+ * How far below the ceiling a trim cuts. Trimming to exactly the ceiling would
+ * re-sort on every subsequent insert; leaving headroom amortises it to one sort
+ * per TRIM_HEADROOM events.
+ */
+const TRIM_HEADROOM = 200
+
+/**
+ * IndexedDB-backed and debounced: events arrive in bursts, so the store is
+ * written once per burst, and as a structured clone rather than JSON.
+ * Nothing ever leaves the device.
+ */
+const persistedStorage = createDebouncedPersistStorage<StoreData>({
+  get: (key) => idbGet(key),
+  set: async (key, value) => {
+    await idbSet(key, value)
   },
-  removeItem: async (name) => {
-    await idbDel(name)
+  del: async (key) => {
+    await idbDel(key)
   },
-}
+})
+
+/** Writes any pending state immediately. Call before anything destructive. */
+export const flushStore = () => persistedStorage.flush()
 
 export interface StoreData {
   kids: Kid[]
@@ -127,9 +148,29 @@ export const useStore = create<StoreState>()(
         const s = get()
         if (!s.settings.eventLogEnabled) return undefined
         if (!s.tags.some((t) => t.id === tagId)) return undefined
+        // Retention is a privacy promise, so an event that is already older than
+        // the window never enters the log at all. A tag replaying a long-buffered
+        // event is the realistic source of one.
+        const now = Date.now()
+        const cutoff = now - s.settings.retentionDays * DAY_MS
+        if (at < cutoff) return undefined
+
         const event = TagEventSchema.parse({ id: newId(), tagId, type, at, intensity })
-        const cutoff = at - s.settings.retentionDays * DAY_MS
-        set({ events: [...s.events.filter((e) => e.at >= cutoff), event] })
+
+        // Appending is O(1). Filtering the whole log on every insert was
+        // quadratic, so instead the head is checked cheaply: the array is in
+        // insertion order, so if the oldest entry has not expired, none has.
+        const oldest = s.events[0]
+        const base = oldest && oldest.at < cutoff ? s.events.filter((e) => e.at >= cutoff) : s.events
+        const next = [...base, event]
+        if (next.length > MAX_EVENTS) {
+          // Sort rather than slice from the end: a tag replaying its buffer can
+          // deliver older events after newer ones, and dropping the newest
+          // arrivals instead of the oldest would be wrong.
+          next.sort((a, b) => a.at - b.at)
+          next.splice(0, next.length - (MAX_EVENTS - TRIM_HEADROOM))
+        }
+        set({ events: next })
         return event
       },
       clearEvents: (tagId) =>
@@ -147,13 +188,17 @@ export const useStore = create<StoreState>()(
 
       wipeAll: async () => {
         set({ ...initialData })
+        // Order matters. A debounced write holding the old state must be
+        // resolved before the store is cleared, or a pending value carrying a
+        // child's name could land back in storage after "delete everything".
+        await persistedStorage.flush()
         await idbClear()
       },
     }),
     {
       name: STORE_KEY,
       version: 1,
-      storage: createJSONStorage(() => idbStorage),
+      storage: persistedStorage,
       partialize: (s) => ({ kids: s.kids, tags: s.tags, events: s.events, settings: s.settings }),
       merge: (persisted, current) => {
         // Validate item-by-item so one corrupt record never wipes a family's setup.

@@ -25,13 +25,28 @@ describe('store', () => {
     expect(useStore.getState().tags).toHaveLength(1)
   })
 
-  it('logs events and prunes beyond retention', () => {
+  it('refuses an event that is already older than the retention window', () => {
     const kid = useStore.getState().addKid({ ageBand: 'little' })
     const tag = useStore.getState().addTag({ deviceId: 'sim-2', nickname: 'Splash', thing: 'bottle', kidId: kid.id, personality: 'sweet' })
     const now = Date.now()
-    useStore.getState().logEvent(tag.id, 'drop', now - 8 * 24 * 3_600_000)
+    // A tag replaying a long-buffered event must not reopen a closed window.
+    expect(useStore.getState().logEvent(tag.id, 'drop', now - 8 * 24 * 3_600_000)).toBeUndefined()
     useStore.getState().logEvent(tag.id, 'filled', now)
     expect(useStore.getState().events.map((e) => e.type)).toEqual(['filled'])
+  })
+
+  it('drops entries as they age out of the window', () => {
+    const kid = useStore.getState().addKid({ ageBand: 'little' })
+    const tag = useStore.getState().addTag({ deviceId: 'sim-2b', nickname: 'Splash', thing: 'bottle', kidId: kid.id, personality: 'sweet' })
+    const now = Date.now()
+    // Logged while still inside the window...
+    useStore.getState().logEvent(tag.id, 'drop', now - 6.9 * 24 * 3_600_000)
+    expect(useStore.getState().events).toHaveLength(1)
+    // ...then the clock moves past its seventh day and the next write clears it.
+    vi.setSystemTime(now + 0.2 * 24 * 3_600_000)
+    useStore.getState().logEvent(tag.id, 'filled')
+    expect(useStore.getState().events.map((e) => e.type)).toEqual(['filled'])
+    vi.useRealTimers()
   })
 
   it('does not log when the event log is disabled', () => {
